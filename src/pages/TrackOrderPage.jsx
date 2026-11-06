@@ -20,7 +20,13 @@ function getOrderItems(order) {
   }
 }
 
-function OrderCard({ order, authToken, onOpenAuth }) {
+function OrderCard({
+  order,
+  authToken,
+  onOpenAuth,
+  onCancel,
+  isCancelling,
+}) {
   const statusIndex = STATUS_STEPS.findIndex(
     (step) => step.key === order.status,
   );
@@ -63,10 +69,11 @@ function OrderCard({ order, authToken, onOpenAuth }) {
           aria-label={`Order status: ${terminalStatusLabel}`}
         >
           <strong>{terminalStatusLabel}</strong>
-          {order.paymentMethod === "UPI / GPay" && (
+          {order.paymentMethod === "UPI / GPay" &&
+            order.paymentStatus === "PAID" && (
             <p>
-              If you have already paid, your refund will be initiated to your
-              original payment account within 2–5 days.
+              Your refund will be initiated to your original payment account
+              within 2–5 days.
             </p>
           )}
         </section>
@@ -131,6 +138,18 @@ function OrderCard({ order, authToken, onOpenAuth }) {
           {order.address}, {order.pincode}
         </span>
       </div>
+      {order.status === "PENDING" && (
+        <div className="track-order-card__actions">
+          <button
+            className="track-order-card__cancel"
+            disabled={isCancelling}
+            onClick={() => onCancel(order)}
+            type="button"
+          >
+            {isCancelling ? "Cancelling…" : "Cancel this order"}
+          </button>
+        </div>
+      )}
     </article>
   );
 }
@@ -143,37 +162,87 @@ export default function TrackOrderPage({
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
+  const [actionError, setActionError] = useState("");
+  const [cancellingOrderId, setCancellingOrderId] = useState(null);
 
   useEffect(() => {
     if (!authToken || !currentUser) return undefined;
 
     let active = true;
-    fetch(`${API_BASE_URL}/api/orders/user`, {
-      headers: { Authorization: `Bearer ${authToken}` },
-    })
-      .then(async (response) => {
+    let isFetching = false;
+
+    const refreshOrders = async () => {
+      if (!active || isFetching) return;
+      isFetching = true;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/orders/user`, {
+          cache: "no-store",
+          headers: { Authorization: `Bearer ${authToken}` },
+        });
         if (response.status === 401) {
           throw new Error("Your sign-in session expired. Please sign in again.");
         }
         if (!response.ok) {
           throw new Error("We couldn't load your orders. Please try again.");
         }
-        return response.json();
-      })
-      .then((data) => {
-        if (active) setOrders(data);
-      })
-      .catch((error) => {
+        const data = await response.json();
+        if (active) {
+          setOrders(data);
+          setErrorMessage("");
+        }
+      } catch (error) {
         if (active) setErrorMessage(error.message);
-      })
-      .finally(() => {
+      } finally {
+        isFetching = false;
         if (active) setLoading(false);
-      });
+      }
+    };
+
+    refreshOrders();
+    const refreshInterval = window.setInterval(refreshOrders, 60_000);
+    window.addEventListener("focus", refreshOrders);
 
     return () => {
       active = false;
+      window.clearInterval(refreshInterval);
+      window.removeEventListener("focus", refreshOrders);
     };
   }, [authToken, currentUser]);
+
+  const handleCancelOrder = async (order) => {
+    if (
+      !window.confirm(
+        `Cancel order #${order.id}? This can only be done before work begins.`,
+      )
+    ) {
+      return;
+    }
+
+    setActionError("");
+    setCancellingOrderId(order.id);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/orders/${order.id}/cancel`,
+        {
+          method: "PATCH",
+          headers: { Authorization: `Bearer ${authToken}` },
+        },
+      );
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || "Could not cancel this order.");
+      }
+
+      setOrders((previous) =>
+        previous.map((item) => (item.id === order.id ? body : item)),
+      );
+    } catch (error) {
+      setActionError(error.message || "Could not cancel this order.");
+    } finally {
+      setCancellingOrderId(null);
+    }
+  };
 
   return (
     <main className="track-orders-page">
@@ -220,12 +289,19 @@ export default function TrackOrderPage({
         </section>
       ) : (
         <div className="track-orders-list">
+          {actionError && (
+            <p className="track-order-action-error" role="alert">
+              {actionError}
+            </p>
+          )}
           {orders.map((order) => (
             <OrderCard
               key={order.id}
               order={order}
               authToken={authToken}
               onOpenAuth={onOpenAuth}
+              onCancel={handleCancelOrder}
+              isCancelling={cancellingOrderId === order.id}
             />
           ))}
         </div>

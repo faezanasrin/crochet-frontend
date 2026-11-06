@@ -188,8 +188,8 @@ export default function AdminOrdersPage({ onProductsChanged }) {
   const handleTerminalOrderAction = async (order, newStatus) => {
     const actionLabel = newStatus === "REJECTED" ? "reject" : "cancel";
     const refundNotice =
-      order.paymentMethod === "UPI / GPay"
-        ? "\n\nIf the customer has paid, the tracker will tell them their refund will be initiated within 2–5 days."
+      order.paymentMethod === "UPI / GPay" && order.paymentStatus === "PAID"
+        ? "\n\nThe customer tracker will tell them their refund will be initiated within 2–5 days."
         : "";
     if (
       !window.confirm(
@@ -201,6 +201,16 @@ export default function AdminOrdersPage({ onProductsChanged }) {
 
     await handleStatusChange(order.id, newStatus);
   };
+
+  useEffect(() => {
+    if (!adminToken) return undefined;
+
+    const refreshInterval = window.setInterval(
+      () => setRefreshKey((key) => key + 1),
+      60_000,
+    );
+    return () => window.clearInterval(refreshInterval);
+  }, [adminToken]);
 
   const handlePaymentConfirmation = async (orderId) => {
     try {

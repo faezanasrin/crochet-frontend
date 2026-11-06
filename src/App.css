@@ -2437,6 +2437,39 @@
   line-height: 1.5;
 }
 
+.track-order-card__actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 0.75rem;
+}
+
+.track-order-card__cancel {
+  padding: 0.55rem 0.8rem;
+  border: 1px solid #e4b7b7;
+  border-radius: 8px;
+  background: #fff3f3;
+  color: #a83232;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.track-order-card__cancel:disabled {
+  cursor: wait;
+  opacity: 0.65;
+}
+
+.track-order-action-error {
+  margin: 0;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid #e6c6bd;
+  border-radius: 8px;
+  background: #fff2ee;
+  color: #873e37;
+  font-size: 0.85rem;
+}
+
 .track-order-card__details {
   padding: 0.9rem 0;
 }
