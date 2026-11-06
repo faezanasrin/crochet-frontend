@@ -13,7 +13,7 @@ export default function HomePage({
   return (
     <main>
       <HeroBanner products={products} />
-      <MysteryBoxSection products={products} onAddToCart={onAddToCart} />
+      <MysteryBoxSection products={products} />
       <section className="shop-section home-favorites">
         <div className="shop-section__heading">
           <div>
