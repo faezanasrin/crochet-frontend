@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import logo from "../asset/logo.jpg";
 
@@ -10,6 +11,7 @@ export default function Navbar({
   onLogout,
 }) {
   const isAdminPage = useLocation().pathname === "/admin";
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
     <>
@@ -21,14 +23,40 @@ export default function Navbar({
         <NavLink className="brand" to="/" aria-label="Fayzo Crochet Co. home">
           <img className="brand__logo" src={logo} alt="Fayzo Crochet Co." />
         </NavLink>
-        <nav className="main-nav" aria-label="Main navigation">
-          <NavLink to="/shop">Shop</NavLink>
-          <NavLink to="/#our-story">Our story</NavLink>
-          <NavLink className="track-order-link" to="/track">
+        <nav
+          className={`main-nav${isMobileMenuOpen ? " main-nav--open" : ""}`}
+          id="main-navigation"
+          aria-label="Main navigation"
+        >
+          <NavLink to="/shop" onClick={() => setIsMobileMenuOpen(false)}>
+            Shop
+          </NavLink>
+          <NavLink to="/#our-story" onClick={() => setIsMobileMenuOpen(false)}>
+            Our story
+          </NavLink>
+          <NavLink
+            className="track-order-link"
+            to="/track"
+            onClick={() => setIsMobileMenuOpen(false)}
+          >
             Track Order
           </NavLink>
         </nav>
         <div className="header-actions">
+          <button
+            className="mobile-menu-toggle"
+            type="button"
+            aria-label={
+              isMobileMenuOpen
+                ? "Close navigation menu"
+                : "Open navigation menu"
+            }
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="main-navigation"
+            onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+          >
+            <span aria-hidden="true">{isMobileMenuOpen ? "×" : "☰"}</span>
+          </button>
           {!isAdminPage && (currentUser ? (
             <button
               className="account-button"
