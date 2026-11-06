@@ -41,7 +41,6 @@ export default function AdminOrdersPage({ onProductsChanged }) {
   const [editingProductId, setEditingProductId] = useState(null);
   const [isSavingProduct, setIsSavingProduct] = useState(false);
   const [productRefreshKey, setProductRefreshKey] = useState(0);
-  const [isClearingOrders, setIsClearingOrders] = useState(false);
 
   const fetchOrders = () => {
     setLoading(true);
@@ -231,72 +230,15 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     }
   };
 
-  const handleClearAllOrders = async () => {
-    if (isClearingOrders || orders.length === 0) return;
-
-    const orderCount = orders.length;
-    if (
-      !window.confirm(
-        `Permanently delete all ${orderCount} orders from the admin order history? This cannot be undone. Product and customer account data will not be deleted.`,
-      )
-    ) {
-      return;
-    }
-
-    setIsClearingOrders(true);
-    setStatusActionError("");
-    const deletedOrderIds = [];
-    const failedOrderMessages = [];
-
-    for (const order of orders) {
-      try {
-        const response = await fetch(
-          `${API_BASE_URL}/api/orders/${order.id}`,
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${adminToken}` },
-          },
-        );
-        if (!response.ok) {
-          const body = await response.json().catch(() => ({}));
-          failedOrderMessages.push(
-            `#${order.id}: ${body.error || response.statusText}`,
-          );
-          continue;
-        }
-        deletedOrderIds.push(order.id);
-      } catch (requestError) {
-        failedOrderMessages.push(
-          `#${order.id}: ${requestError.message || "Network error"}`,
-        );
-      }
-    }
-
-    if (deletedOrderIds.length > 0) {
-      const deletedIds = new Set(deletedOrderIds);
-      setOrders((previous) =>
-        previous.filter((order) => !deletedIds.has(order.id)),
-      );
-    }
-
-    if (failedOrderMessages.length > 0) {
-      setStatusActionError(
-        `Deleted ${deletedOrderIds.length} of ${orderCount} orders. ${failedOrderMessages.length} could not be deleted: ${failedOrderMessages.slice(0, 3).join("; ")}${failedOrderMessages.length > 3 ? "; …" : ""}`,
-      );
-    }
-    setIsClearingOrders(false);
-    setRefreshKey((key) => key + 1);
-  };
-
   useEffect(() => {
-    if (!adminToken || isClearingOrders) return undefined;
+    if (!adminToken) return undefined;
 
     const refreshInterval = window.setInterval(
       () => setRefreshKey((key) => key + 1),
       60_000,
     );
     return () => window.clearInterval(refreshInterval);
-  }, [adminToken, isClearingOrders]);
+  }, [adminToken]);
 
   const handlePaymentConfirmation = async (orderId) => {
     try {
@@ -623,43 +565,20 @@ export default function AdminOrdersPage({ onProductsChanged }) {
         </div>
         <div style={{ display: "flex", gap: "10px" }}>
           {activeTab === "orders" ? (
-            <>
-              {orders.length > 0 && (
-                <button
-                  disabled={isClearingOrders || loading}
-                  onClick={handleClearAllOrders}
-                  style={{
-                    backgroundColor: "#FFF0F0",
-                    border: "1px solid #EAA8A8",
-                    padding: "8px 16px",
-                    borderRadius: "10px",
-                    cursor:
-                      isClearingOrders || loading ? "wait" : "pointer",
-                    fontWeight: "600",
-                    color: "#A83232",
-                  }}
-                  type="button"
-                >
-                  {isClearingOrders ? "Deleting orders…" : "Delete all orders"}
-                </button>
-              )}
-              <button
-                disabled={isClearingOrders}
-                onClick={fetchOrders}
-                style={{
-                  backgroundColor: "#FFF",
-                  border: "1px solid #DDD",
-                  padding: "8px 16px",
-                  borderRadius: "10px",
-                  cursor: isClearingOrders ? "wait" : "pointer",
-                  fontWeight: "600",
-                  color: "#6A3845",
-                }}
-                type="button"
-              >
+            <button
+              onClick={fetchOrders}
+              style={{
+                backgroundColor: "#FFF",
+                border: "1px solid #DDD",
+                padding: "8px 16px",
+                borderRadius: "10px",
+                cursor: "pointer",
+                fontWeight: "600",
+                color: "#6A3845",
+              }}
+            >
                 🔄 Refresh
-              </button>
-            </>
+            </button>
           ) : (
             <button
               onClick={() => setProductRefreshKey((key) => key + 1)}
@@ -893,7 +812,6 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       <button
                         aria-label={`Permanently delete order ${order.id}`}
                         className="admin-order-card__delete"
-                        disabled={isClearingOrders}
                         onClick={() => handleOrderDelete(order)}
                         title="Permanently delete order"
                         type="button"
