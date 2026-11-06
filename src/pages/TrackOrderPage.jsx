@@ -22,6 +22,7 @@ function getOrderItems(order) {
 
 function OrderCard({
   order,
+  displayOrderNumber,
   authToken,
   onOpenAuth,
   onCancel,
@@ -74,9 +75,9 @@ function OrderCard({
       {canDeleteOrder && (
         <div className="track-order-card-swipe__action">
           <button
-            aria-label={`Remove order ${order.id} from your order history`}
+            aria-label={`Remove order ${displayOrderNumber} from your order history`}
             disabled={isDeleting}
-            onClick={() => onDelete(order)}
+            onClick={() => onDelete(order, displayOrderNumber)}
             type="button"
           >
             {isDeleting ? "…" : "Delete"}
@@ -88,7 +89,7 @@ function OrderCard({
       >
       <header className="track-order-card__header">
         <div>
-          <span className="eyebrow">ORDER #{order.id}</span>
+          <span className="eyebrow">ORDER #{displayOrderNumber}</span>
           <p>
             {order.orderDate
               ? new Date(order.orderDate).toLocaleString("en-IN", {
@@ -103,10 +104,10 @@ function OrderCard({
             <strong>₹{Number(order.totalAmount || 0).toFixed(2)}</strong>
             {canDeleteOrder && (
               <button
-                aria-label={`Remove order ${order.id} from your order history`}
+                aria-label={`Remove order ${displayOrderNumber} from your order history`}
                 className="track-order-card__delete"
                 disabled={isDeleting}
-                onClick={() => onDelete(order)}
+                onClick={() => onDelete(order, displayOrderNumber)}
                 title="Remove order from your history"
                 type="button"
               >
@@ -205,7 +206,7 @@ function OrderCard({
           <button
             className="track-order-card__cancel"
             disabled={isCancelling}
-            onClick={() => onCancel(order)}
+            onClick={() => onCancel(order, displayOrderNumber)}
             type="button"
           >
             {isCancelling ? "Cancelling…" : "Cancel this order"}
@@ -275,10 +276,10 @@ export default function TrackOrderPage({
     };
   }, [authToken, currentUser]);
 
-  const handleCancelOrder = async (order) => {
+  const handleCancelOrder = async (order, displayOrderNumber) => {
     if (
       !window.confirm(
-        `Cancel order #${order.id}? This can only be done before work begins.`,
+        `Cancel order #${displayOrderNumber}? This can only be done before work begins.`,
       )
     ) {
       return;
@@ -309,10 +310,10 @@ export default function TrackOrderPage({
     }
   };
 
-  const handleDeleteOrder = async (order) => {
+  const handleDeleteOrder = async (order, displayOrderNumber) => {
     if (
       !window.confirm(
-        `Remove order #${order.id} from your order history? This cannot be undone.`,
+        `Remove order #${displayOrderNumber} from your order history? This cannot be undone.`,
       )
     ) {
       return;
@@ -392,10 +393,11 @@ export default function TrackOrderPage({
               {actionError}
             </p>
           )}
-          {orders.map((order) => (
+          {orders.map((order, index) => (
             <OrderCard
               key={order.id}
               order={order}
+              displayOrderNumber={orders.length - index}
               authToken={authToken}
               onOpenAuth={onOpenAuth}
               onCancel={handleCancelOrder}
