@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import ProductReviews from "../components/ProductReviews";
 import { API_BASE_URL } from "../utils/api";
 
@@ -28,6 +28,8 @@ function OrderCard({
   isCancelling,
   onDelete,
   isDeleting,
+  isSwipeOpen,
+  onSwipeOpen,
 }) {
   const statusIndex = STATUS_STEPS.findIndex(
     (step) => step.key === order.status,
@@ -37,9 +39,53 @@ function OrderCard({
   const isTerminalOrder = ["REJECTED", "CANCELLED"].includes(order.status);
   const terminalStatusLabel =
     order.status === "REJECTED" ? "Order rejected" : "Order cancelled";
+  const canDeleteOrder = ["COMPLETED", "REJECTED", "CANCELLED"].includes(
+    order.status,
+  );
+  const touchStart = useRef(null);
+
+  const handleTouchStart = (event) => {
+    if (!canDeleteOrder) return;
+    const touch = event.touches[0];
+    touchStart.current = { x: touch.clientX, y: touch.clientY };
+  };
+
+  const handleTouchEnd = (event) => {
+    if (!canDeleteOrder || !touchStart.current) return;
+    const touch = event.changedTouches[0];
+    const deltaX = touch.clientX - touchStart.current.x;
+    const deltaY = touch.clientY - touchStart.current.y;
+    touchStart.current = null;
+
+    if (Math.abs(deltaX) > 60 && Math.abs(deltaX) > Math.abs(deltaY)) {
+      onSwipeOpen(deltaX < 0 ? order.id : null);
+    }
+  };
 
   return (
-    <article className="track-order-card">
+    <div
+      className={`track-order-card-swipe${isSwipeOpen ? " is-swipe-open" : ""}`}
+      onTouchCancel={() => {
+        touchStart.current = null;
+      }}
+      onTouchEnd={handleTouchEnd}
+      onTouchStart={handleTouchStart}
+    >
+      {canDeleteOrder && (
+        <div className="track-order-card-swipe__action">
+          <button
+            aria-label={`Remove order ${order.id} from your order history`}
+            disabled={isDeleting}
+            onClick={() => onDelete(order)}
+            type="button"
+          >
+            {isDeleting ? "…" : "Delete"}
+          </button>
+        </div>
+      )}
+      <article
+        className={`track-order-card${isSwipeOpen ? " is-swipe-open" : ""}`}
+      >
       <header className="track-order-card__header">
         <div>
           <span className="eyebrow">ORDER #{order.id}</span>
@@ -55,7 +101,7 @@ function OrderCard({
         <div className="track-order-card__amount">
           <div className="track-order-card__amount-primary">
             <strong>₹{Number(order.totalAmount || 0).toFixed(2)}</strong>
-            {["COMPLETED", "REJECTED", "CANCELLED"].includes(order.status) && (
+            {canDeleteOrder && (
               <button
                 aria-label={`Remove order ${order.id} from your order history`}
                 className="track-order-card__delete"
@@ -166,7 +212,8 @@ function OrderCard({
           </button>
         </div>
       )}
-    </article>
+      </article>
+    </div>
   );
 }
 
@@ -181,6 +228,7 @@ export default function TrackOrderPage({
   const [actionError, setActionError] = useState("");
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
   const [deletingOrderId, setDeletingOrderId] = useState(null);
+  const [swipedOrderId, setSwipedOrderId] = useState(null);
 
   useEffect(() => {
     if (!authToken || !currentUser) return undefined;
@@ -286,6 +334,7 @@ export default function TrackOrderPage({
       }
 
       setOrders((previous) => previous.filter((item) => item.id !== order.id));
+      setSwipedOrderId(null);
     } catch (error) {
       setActionError(error.message || "Could not remove this order.");
     } finally {
@@ -353,6 +402,8 @@ export default function TrackOrderPage({
               isCancelling={cancellingOrderId === order.id}
               onDelete={handleDeleteOrder}
               isDeleting={deletingOrderId === order.id}
+              isSwipeOpen={swipedOrderId === order.id}
+              onSwipeOpen={setSwipedOrderId}
             />
           ))}
         </div>

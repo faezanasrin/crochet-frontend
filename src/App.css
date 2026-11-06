@@ -2352,6 +2352,15 @@
   box-shadow: 0 6px 20px rgba(83, 61, 43, 0.055);
 }
 
+.track-order-card-swipe {
+  position: relative;
+  border-radius: 16px;
+}
+
+.track-order-card-swipe__action {
+  display: none;
+}
+
 .track-order-card__delete {
   display: grid;
   width: 32px;
@@ -2425,6 +2434,46 @@
 .track-order-card__amount .track-order-card__payment-status {
   color: #8a5a00;
   font-weight: 700;
+}
+
+@media (max-width: 760px) {
+  .track-order-card-swipe {
+    overflow: hidden;
+    background: #a83232;
+    touch-action: pan-y;
+  }
+
+  .track-order-card-swipe__action {
+    position: absolute;
+    inset: 0 0 0 auto;
+    display: grid;
+    width: 88px;
+    place-items: stretch;
+  }
+
+  .track-order-card-swipe__action button {
+    border: 0;
+    background: #a83232;
+    color: #fff;
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .track-order-card-swipe .track-order-card {
+    position: relative;
+    z-index: 1;
+    transition: transform 180ms ease;
+  }
+
+  .track-order-card-swipe .track-order-card.is-swipe-open {
+    transform: translateX(-88px);
+  }
+
+  .track-order-card__amount-primary .track-order-card__delete {
+    display: none;
+  }
 }
 
 .product-card__stock-tag {
