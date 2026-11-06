@@ -1,5 +1,6 @@
 import { Link } from "react-router-dom";
 import HeroBanner from "../components/HeroBanner";
+import MysteryBoxSection from "../components/MysteryBoxSection";
 import ProductGrid from "../components/ProductGrid";
 
 export default function HomePage({
@@ -12,6 +13,7 @@ export default function HomePage({
   return (
     <main>
       <HeroBanner products={products} />
+      <MysteryBoxSection products={products} onAddToCart={onAddToCart} />
       <section className="shop-section home-favorites">
         <div className="shop-section__heading">
           <div>
