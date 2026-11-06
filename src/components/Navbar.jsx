@@ -20,6 +20,20 @@ export default function Navbar({
         order <span aria-hidden="true">✿</span>
       </div>
       <header className="site-header">
+        <button
+          className="mobile-menu-toggle"
+          type="button"
+          aria-label={
+            isMobileMenuOpen
+              ? "Close navigation menu"
+              : "Open navigation menu"
+          }
+          aria-expanded={isMobileMenuOpen}
+          aria-controls="main-navigation"
+          onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
+        >
+          <span aria-hidden="true">{isMobileMenuOpen ? "×" : "☰"}</span>
+        </button>
         <NavLink className="brand" to="/" aria-label="Fayzo Crochet Co. home">
           <img className="brand__logo" src={logo} alt="Fayzo Crochet Co." />
         </NavLink>
@@ -41,22 +55,32 @@ export default function Navbar({
           >
             Track Order
           </NavLink>
+          {!isAdminPage &&
+            (currentUser ? (
+              <button
+                className="account-button nav-account-action"
+                type="button"
+                onClick={() => {
+                  onLogout();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Sign out
+              </button>
+            ) : (
+              <button
+                className="account-button nav-account-action"
+                type="button"
+                onClick={() => {
+                  onOpenAuth();
+                  setIsMobileMenuOpen(false);
+                }}
+              >
+                Sign in
+              </button>
+            ))}
         </nav>
         <div className="header-actions">
-          <button
-            className="mobile-menu-toggle"
-            type="button"
-            aria-label={
-              isMobileMenuOpen
-                ? "Close navigation menu"
-                : "Open navigation menu"
-            }
-            aria-expanded={isMobileMenuOpen}
-            aria-controls="main-navigation"
-            onClick={() => setIsMobileMenuOpen((isOpen) => !isOpen)}
-          >
-            <span aria-hidden="true">{isMobileMenuOpen ? "×" : "☰"}</span>
-          </button>
           {!isAdminPage && (currentUser ? (
             <button
               className="account-button"
