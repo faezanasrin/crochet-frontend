@@ -9,6 +9,10 @@ export default function CartDrawer({
 }) {
   if (!isOpen) return null;
   const hasOutOfStockItems = cart.some((item) => item.inStock === false);
+  const subtotal = Number(total);
+  const deliveryCharge = cart.length === 0 || subtotal >= 499 ? 0 : 49;
+  const grandTotal = subtotal + deliveryCharge;
+  const amountToFreeDelivery = Math.max(0, 499 - subtotal);
 
   return (
     <div className="cart-overlay" onMouseDown={onClose}>
@@ -117,10 +121,25 @@ export default function CartDrawer({
 
         <div className="cart-drawer__footer">
           <div className="cart-total">
-            <span>Subtotal</span>
-            <strong>₹{total}</strong>
+            <span>Items subtotal</span>
+            <strong>₹{subtotal.toFixed(2)}</strong>
           </div>
-          <p>Shipping and any discounts are calculated at checkout.</p>
+          <div className="cart-total">
+            <span>Delivery charge</span>
+            <strong>
+              {deliveryCharge === 0 ? "FREE ✨" : `₹${deliveryCharge.toFixed(2)}`}
+            </strong>
+          </div>
+          {amountToFreeDelivery > 0 && cart.length > 0 && (
+            <p className="cart-delivery-hint">
+              Add ₹{amountToFreeDelivery.toFixed(2)} more to unlock FREE
+              delivery!
+            </p>
+          )}
+          <div className="cart-total cart-total--grand">
+            <span>Grand total</span>
+            <strong>₹{grandTotal.toFixed(2)}</strong>
+          </div>
           {hasOutOfStockItems && (
             <p className="cart-drawer__stock-warning" role="alert">
               Remove out-of-stock items before checking out.

@@ -1445,6 +1445,54 @@
   gap: 0.9rem;
 }
 
+.checkout-totals {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #e9ddd0;
+  border-radius: 6px;
+  background: #fffdf9;
+  color: #594540;
+  font-size: 0.84rem;
+}
+
+.checkout-totals > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.checkout-totals__grand {
+  padding-top: 0.6rem;
+  border-top: 1px solid #e9ddd0;
+  color: var(--berry-dark);
+  font-size: 0.96rem;
+}
+
+.checkout-delivery-hint,
+.cart-delivery-hint {
+  margin: 0;
+  color: #8b3e54;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.45;
+}
+
+.cart-drawer__footer > .cart-delivery-hint {
+  margin: 0.25rem 0;
+}
+
+.cart-total--grand {
+  margin-top: 0.55rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid var(--line);
+  font-weight: 700;
+}
+
+.cart-total--grand strong {
+  font-size: 1.2rem;
+}
+
 .checkout-field {
   display: grid;
   gap: 0.35rem;
@@ -1494,75 +1542,6 @@
   border-color: #b58b79;
   outline: none;
   box-shadow: 0 0 0 3px rgba(181, 139, 121, 0.15);
-}
-
-.checkout-payment {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.6rem;
-  margin: 0;
-  padding: 0;
-  border: 0;
-}
-
-.checkout-payment legend {
-  margin-bottom: 0.45rem;
-  color: #574638;
-  font-size: 0.8rem;
-  font-weight: 600;
-}
-
-.checkout-payment__option {
-  display: inline-flex;
-  min-height: 42px;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.55rem 0.75rem;
-  border: 1px solid #dfd1c3;
-  border-radius: 4px;
-  background: #fffdf9;
-  color: #796a5c;
-  font-size: 0.76rem;
-  cursor: pointer;
-  transition:
-    border-color 150ms ease,
-    background 150ms ease,
-    color 150ms ease;
-}
-
-.checkout-payment__option input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
-}
-
-.checkout-payment__radio {
-  width: 15px;
-  height: 15px;
-  border: 1px solid #bca99a;
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: inset 0 0 0 3px #fff;
-}
-
-.checkout-payment__option--selected {
-  border-color: #a87570;
-  background: #f4e9e1;
-  color: #674b3b;
-}
-
-.checkout-payment__option--selected .checkout-payment__radio {
-  border-color: #a87570;
-  background: #a87570;
-}
-
-.checkout-payment__option:focus-within {
-  outline: 3px solid rgba(197, 155, 137, 0.42);
-  outline-offset: 2px;
 }
 
 .checkout-error {

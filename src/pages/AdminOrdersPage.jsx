@@ -22,6 +22,10 @@ function parseOrderItemsSummary(summary) {
   }
 }
 
+function isUpiOrder(order) {
+  return order.paymentMethod === "UPI" || order.paymentMethod === "UPI / GPay";
+}
+
 export default function AdminOrdersPage({ onProductsChanged }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -188,7 +192,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
   const handleTerminalOrderAction = async (order, newStatus) => {
     const actionLabel = newStatus === "REJECTED" ? "reject" : "cancel";
     const refundNotice =
-      order.paymentMethod === "UPI / GPay" && order.paymentStatus === "PAID"
+      isUpiOrder(order) && order.paymentStatus === "PAID"
         ? "\n\nThe customer tracker will tell them their refund will be initiated within 2–5 days."
         : "";
     if (
@@ -760,7 +764,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                         >
                           {order.paymentMethod}
                         </span>
-                        {order.paymentMethod === "UPI / GPay" && (
+                        {isUpiOrder(order) && (
                           <span
                             style={{
                               backgroundColor:
@@ -959,7 +963,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     </div>
                   </div>
 
-                  {order.paymentMethod === "UPI / GPay" && (
+                  {isUpiOrder(order) && (
                     <div
                       style={{
                         marginBottom: "1rem",
@@ -972,7 +976,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       }}
                     >
                       <strong>Customer UPI transaction ID:</strong>{" "}
-                      {order.paymentReference || "Not provided"}
+                      {order.utrNumber || order.paymentReference || "Not provided"}
                     </div>
                   )}
 
@@ -1043,7 +1047,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     )}
 
                     {!isTerminalOrder &&
-                      order.paymentMethod === "UPI / GPay" &&
+                      isUpiOrder(order) &&
                       order.paymentStatus !== "PAID" && (
                         <button
                           className="admin-order-actions__payment"

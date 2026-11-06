@@ -20,6 +20,10 @@ function getOrderItems(order) {
   }
 }
 
+function isUpiOrder(order) {
+  return order.paymentMethod === "UPI" || order.paymentMethod === "UPI / GPay";
+}
+
 function OrderCard({
   order,
   displayOrderNumber,
@@ -116,7 +120,7 @@ function OrderCard({
             )}
           </div>
           <span>{order.paymentMethod || "Payment preference not set"}</span>
-          {order.paymentMethod === "UPI / GPay" && (
+          {isUpiOrder(order) && (
             <span className="track-order-card__payment-status">
               {order.paymentStatus === "PAID"
                 ? "Payment verified"
@@ -132,7 +136,7 @@ function OrderCard({
           aria-label={`Order status: ${terminalStatusLabel}`}
         >
           <strong>{terminalStatusLabel}</strong>
-          {order.paymentMethod === "UPI / GPay" &&
+          {isUpiOrder(order) &&
             order.paymentStatus === "PAID" && (
             <p>
               Your refund will be initiated to your original payment account

@@ -12,7 +12,7 @@ const initialFormData = {
   address: "",
   pincode: "",
   customNotes: "",
-  paymentMethod: "UPI / GPay",
+  paymentMethod: "UPI",
 };
 
 const escapeHtml = (value) =>
@@ -46,10 +46,7 @@ function createUpiPaymentUri(amount, reference) {
 }
 
 function downloadReceipt(receipt) {
-  const paymentNote =
-    receipt.paymentMethod === "Cash on Delivery"
-      ? "Payment is due when your order is delivered."
-      : `${receipt.paymentStatus === "PAID" ? "UPI payment verified." : "UPI payment is awaiting manual verification."} Transaction ID: ${receipt.paymentReference || "not provided"}.`;
+  const paymentNote = `${receipt.paymentStatus === "PAID" ? "UPI payment verified." : "UPI payment is awaiting manual verification."} UTR: ${receipt.utrNumber || "not provided"}.`;
   const itemsMarkup = receipt.items
     .map(
       (item) => `
@@ -126,8 +123,9 @@ function downloadReceipt(receipt) {
       ${itemsMarkup}
     </section>
     <section class="receipt-totals">
-      <div class="receipt-total-row"><span>Subtotal</span><span>₹${Number(receipt.totalAmount).toFixed(2)}</span></div>
-      <div class="receipt-total-row receipt-total-row--grand"><span>Total</span><span>₹${Number(receipt.totalAmount).toFixed(2)}</span></div>
+      <div class="receipt-total-row"><span>Subtotal</span><span>₹${Number(receipt.subtotal).toFixed(2)}</span></div>
+      <div class="receipt-total-row"><span>Delivery</span><span>${Number(receipt.deliveryCharge) === 0 ? "FREE" : `₹${Number(receipt.deliveryCharge).toFixed(2)}`}</span></div>
+      <div class="receipt-total-row receipt-total-row--grand"><span>Grand total</span><span>₹${Number(receipt.totalAmount).toFixed(2)}</span></div>
     </section>
     <section class="receipt-section">
       <span>Payment method</span>
@@ -174,6 +172,10 @@ export default function CheckoutModal({
   const [receipt, setReceipt] = useState(null);
   const [upiReference, setUpiReference] = useState("");
   const [paymentUtr, setPaymentUtr] = useState("");
+  const subtotal = Number(totalAmount);
+  const deliveryCharge = subtotal >= 499 ? 0 : 49;
+  const grandTotal = subtotal + deliveryCharge;
+  const amountToFreeDelivery = Math.max(0, 499 - subtotal);
 
   if (!isOpen) return null;
 
@@ -191,23 +193,19 @@ export default function CheckoutModal({
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
-    if (name === "paymentMethod") {
-      setUpiReference("");
-      setPaymentUtr("");
-    }
     setErrorMessage("");
   };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    if (formData.paymentMethod === "UPI / GPay" && !upiReference) {
+    if (!upiReference) {
       setUpiReference(`FAY${Date.now().toString(36).toUpperCase()}`);
       setErrorMessage("");
       return;
     }
 
-    if (formData.paymentMethod === "UPI / GPay" && !paymentUtr.trim()) {
-      setErrorMessage("Enter the UPI transaction ID (UTR) from your payment app.");
+    if (!/^\d{12}$/.test(paymentUtr.trim())) {
+      setErrorMessage("Enter the 12-digit UPI reference / UTR from your payment app.");
       return;
     }
 
@@ -216,10 +214,13 @@ export default function CheckoutModal({
 
     const orderPayload = {
       ...formData,
+      paymentMethod: "UPI",
       customerEmail: currentUser?.email,
-      paymentReference:
-        formData.paymentMethod === "UPI / GPay" ? paymentUtr.trim() : null,
-      totalAmount: Number(totalAmount),
+      paymentReference: paymentUtr.trim(),
+      utrNumber: paymentUtr.trim(),
+      subtotal,
+      deliveryCharge,
+      totalAmount: grandTotal,
       items: cart.map((item) => ({
         productId: item.id,
         name: item.name,
@@ -260,10 +261,14 @@ export default function CheckoutModal({
       const orderId = savedOrder.id ?? savedOrder.orderId ?? null;
       const completedOrder = {
         ...orderPayload,
+        subtotal: Number(savedOrder.subtotal ?? subtotal),
+        deliveryCharge: Number(savedOrder.deliveryCharge ?? deliveryCharge),
+        totalAmount: Number(savedOrder.totalAmount ?? grandTotal),
+        utrNumber: savedOrder.utrNumber || paymentUtr.trim(),
+        paymentReference:
+          savedOrder.paymentReference || paymentUtr.trim(),
         orderId,
-        paymentStatus:
-          savedOrder.paymentStatus ||
-          (formData.paymentMethod === "UPI / GPay" ? "PENDING" : "NOT_REQUIRED"),
+        paymentStatus: savedOrder.paymentStatus || "PENDING",
         receiptNumber: `FAY-${Date.now().toString(36).toUpperCase()}`,
       };
       setReceipt(completedOrder);
@@ -282,7 +287,7 @@ export default function CheckoutModal({
   };
 
   const upiPaymentUri = upiReference
-    ? createUpiPaymentUri(totalAmount, upiReference)
+    ? createUpiPaymentUri(grandTotal, upiReference)
     : "";
 
   return (
@@ -352,10 +357,18 @@ export default function CheckoutModal({
             <div className="order-receipt__totals">
               <div>
                 <span>Subtotal</span>
-                <span>₹{receipt.totalAmount.toFixed(2)}</span>
+                <span>₹{receipt.subtotal.toFixed(2)}</span>
+              </div>
+              <div>
+                <span>Delivery charge</span>
+                <span>
+                  {receipt.deliveryCharge === 0
+                    ? "FREE ✨"
+                    : `₹${receipt.deliveryCharge.toFixed(2)}`}
+                </span>
               </div>
               <div className="order-receipt__grand-total">
-                <strong>Order total</strong>
+                <strong>Grand total</strong>
                 <strong>₹{receipt.totalAmount.toFixed(2)}</strong>
               </div>
             </div>
@@ -364,11 +377,9 @@ export default function CheckoutModal({
               <span>Payment method</span>
               <strong>{receipt.paymentMethod}</strong>
               <p>
-                {receipt.paymentMethod === "Cash on Delivery"
-                  ? "Payment is due when your order is delivered."
-                  : receipt.paymentStatus === "PAID"
-                    ? "UPI payment verified."
-                    : `UPI payment is awaiting manual verification. Transaction ID: ${receipt.paymentReference || "not provided"}.`}
+                {receipt.paymentStatus === "PAID"
+                  ? "UPI payment verified."
+                  : `UPI payment is awaiting manual verification. UTR: ${receipt.utrNumber}.`}
               </p>
             </div>
 
@@ -380,9 +391,8 @@ export default function CheckoutModal({
             )}
 
             <p className="order-receipt__thanks">
-              {receipt.paymentMethod === "Cash on Delivery"
-                ? "Your order is confirmed. We’ll be in touch soon about your handmade treasures."
-                : "Your order is received. UPI payment will be verified before we begin making your treasures."}
+              Your order is received. UPI payment will be verified before we
+              begin making your treasures.
             </p>
             <Link
               className="order-receipt__track-link"
@@ -424,10 +434,35 @@ export default function CheckoutModal({
 
             <div className="checkout-summary">
               <span>Items ({cart.reduce((sum, item) => sum + item.qty, 0)})</span>
-              <strong>₹{totalAmount}</strong>
+              <strong>₹{grandTotal.toFixed(2)}</strong>
             </div>
 
             <form className="checkout-form" onSubmit={handleSubmit}>
+              <div className="checkout-totals" aria-label="Order total breakdown">
+                <div>
+                  <span>Items subtotal</span>
+                  <strong>₹{subtotal.toFixed(2)}</strong>
+                </div>
+                <div>
+                  <span>Delivery charge</span>
+                  <strong>
+                    {deliveryCharge === 0
+                      ? "FREE ✨"
+                      : `₹${deliveryCharge.toFixed(2)}`}
+                  </strong>
+                </div>
+                {amountToFreeDelivery > 0 && (
+                  <p className="checkout-delivery-hint">
+                    Add ₹{amountToFreeDelivery.toFixed(2)} more to unlock FREE
+                    delivery!
+                  </p>
+                )}
+                <div className="checkout-totals__grand">
+                  <strong>Grand total payable</strong>
+                  <strong>₹{grandTotal.toFixed(2)}</strong>
+                </div>
+              </div>
+
               <label className="checkout-field">
                 <span>Full name <b>*</b></span>
                 <input
@@ -496,81 +531,65 @@ export default function CheckoutModal({
                 />
               </label>
 
-              <fieldset className="checkout-payment">
-                <legend>Payment method</legend>
-                {["UPI / GPay", "Cash on Delivery"].map((method) => (
-                  <label
-                    className={`checkout-payment__option${formData.paymentMethod === method ? " checkout-payment__option--selected" : ""}`}
-                    key={method}
-                  >
-                    <input
-                      type="radio"
-                      name="paymentMethod"
-                      value={method}
-                      checked={formData.paymentMethod === method}
-                      onChange={handleChange}
-                    />
-                    <span className="checkout-payment__radio" />
-                    {method}
-                  </label>
-                ))}
-              </fieldset>
-
-              {formData.paymentMethod === "UPI / GPay" && (
-                <section className="checkout-upi" aria-labelledby="upi-payment-title">
-                  <h3 id="upi-payment-title">Pay securely with your UPI app</h3>
-                  {!upiReference ? (
-                    <p>
-                      Continue to generate a QR code for ₹{Number(totalAmount).toFixed(2)}.
-                    </p>
-                  ) : (
-                    <>
-                      <p>
-                        Scan with GPay or another UPI app, or open the payment app on
-                        this device. Payee: <strong>{UPI_PAYEE_NAME}</strong>
-                      </p>
-                      <div className="checkout-upi__payment">
-                        <QRCodeSVG
-                          aria-label={`UPI payment QR for ₹${Number(totalAmount).toFixed(2)}`}
-                          value={upiPaymentUri}
-                          size={176}
-                          level="M"
-                        />
-                        <div>
-                          <span>UPI ID</span>
-                          <strong>{UPI_ID}</strong>
-                          <span>Amount</span>
-                          <strong>₹{Number(totalAmount).toFixed(2)}</strong>
-                          <span>Order reference</span>
-                          <strong>{upiReference}</strong>
-                          <a className="checkout-upi__open" href={upiPaymentUri}>
-                            Open UPI app
-                          </a>
-                        </div>
+              <section className="checkout-upi" aria-labelledby="upi-payment-title">
+                <h3 id="upi-payment-title">Pay with UPI</h3>
+                <p>
+                  Pay <strong>₹{grandTotal.toFixed(2)}</strong> to{" "}
+                  <strong>{UPI_ID}</strong> using Google Pay (GPay), PhonePe,
+                  Paytm, or any UPI app. Payee: <strong>{UPI_PAYEE_NAME}</strong>
+                </p>
+                {!upiReference ? (
+                  <p>
+                    Continue to display the QR code and open a payment app.
+                  </p>
+                ) : (
+                  <>
+                    <div className="checkout-upi__payment">
+                      <QRCodeSVG
+                        aria-label={`UPI payment QR for ₹${grandTotal.toFixed(2)}`}
+                        value={upiPaymentUri}
+                        size={176}
+                        level="M"
+                      />
+                      <div>
+                        <span>UPI ID</span>
+                        <strong>{UPI_ID}</strong>
+                        <span>Amount payable</span>
+                        <strong>₹{grandTotal.toFixed(2)}</strong>
+                        <span>Order reference</span>
+                        <strong>{upiReference}</strong>
+                        <a className="checkout-upi__open" href={upiPaymentUri}>
+                          Open UPI app
+                        </a>
                       </div>
-                      <label className="checkout-field">
-                        <span>UPI transaction ID / UTR <b>*</b></span>
-                        <input
-                          autoComplete="off"
-                          maxLength="100"
-                          name="paymentUtr"
-                          onChange={(event) => {
-                            setPaymentUtr(event.target.value);
-                            setErrorMessage("");
-                          }}
-                          placeholder="Enter the UTR from your payment receipt"
-                          required
-                          value={paymentUtr}
-                        />
-                      </label>
-                      <p className="checkout-upi__notice">
-                        Your order stays pending until we manually verify the transfer.
-                        This page cannot confirm payment automatically.
-                      </p>
-                    </>
-                  )}
-                </section>
-              )}
+                    </div>
+                    <label className="checkout-field">
+                      <span>12-digit UPI reference / UTR number <b>*</b></span>
+                      <input
+                        autoComplete="off"
+                        inputMode="numeric"
+                        maxLength="12"
+                        minLength="12"
+                        name="paymentUtr"
+                        onChange={(event) => {
+                          setPaymentUtr(
+                            event.target.value.replace(/\D/g, "").slice(0, 12),
+                          );
+                          setErrorMessage("");
+                        }}
+                        pattern="[0-9]{12}"
+                        placeholder="Enter the 12-digit UTR"
+                        required
+                        value={paymentUtr}
+                      />
+                    </label>
+                    <p className="checkout-upi__notice">
+                      Your order stays pending until we manually verify the
+                      payment. Use the 12-digit UTR shown in your payment app.
+                    </p>
+                  </>
+                )}
+              </section>
 
               {errorMessage && (
                 <p className="checkout-error" role="alert">
@@ -585,11 +604,11 @@ export default function CheckoutModal({
               >
                 {isSubmitting
                   ? "Submitting..."
-                  : formData.paymentMethod === "UPI / GPay" && !upiReference
-                    ? `Continue to UPI payment · ₹${totalAmount}`
-                    : formData.paymentMethod === "UPI / GPay"
-                      ? "I’ve paid — submit order"
-                      : `Place order · ₹${totalAmount}`}
+                  : !upiReference
+                    ? `Continue to UPI payment · ₹${grandTotal.toFixed(2)}`
+                    : paymentUtr.length !== 12
+                      ? "Enter 12-digit UTR to place order"
+                      : `I’ve paid — place order · ₹${grandTotal.toFixed(2)}`}
               </button>
             </form>
           </>
