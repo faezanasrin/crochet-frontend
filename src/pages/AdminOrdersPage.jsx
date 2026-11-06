@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-
-const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "https://fayzo-crochet-api.onrender.com"
-).replace(/\/+$/, "");
+import { API_BASE_URL } from "../utils/api";
 
 const emptyProduct = {
   name: "",

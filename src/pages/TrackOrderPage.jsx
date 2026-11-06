@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import ProductReviews from "../components/ProductReviews";
+import { API_BASE_URL } from "../utils/api";
 
 const STATUS_STEPS = [
   { key: "PENDING", label: "Order received", icon: "⏳" },
@@ -129,7 +130,7 @@ export default function TrackOrderPage({
     if (!authToken || !currentUser) return undefined;
 
     let active = true;
-    fetch("http://localhost:8080/api/orders/user", {
+    fetch(`${API_BASE_URL}/api/orders/user`, {
       headers: { Authorization: `Bearer ${authToken}` },
     })
       .then(async (response) => {

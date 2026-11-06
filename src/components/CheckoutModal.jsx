@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
-
-const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "https://fayzo-crochet-api.onrender.com"
-).replace(/\/+$/, "");
+import { API_BASE_URL } from "../utils/api";
 
 const UPI_ID = "faezanasrinmb@oksbi";
 const UPI_PAYEE_NAME = "Fayzo Crochet Co.";

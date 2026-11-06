@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { BrowserRouter, Link, Route, Routes, useParams } from "react-router-dom";
+import { API_BASE_URL } from "../utils/api";
 import "./App.css";
 import AuthModal from "./components/AuthModal";
 import CartDrawer from "./components/CartDrawer";
@@ -29,7 +30,7 @@ export default function App() {
   const [isAuthOpen, setIsAuthOpen] = useState(false);
 
   useEffect(() => {
-    fetch("http://localhost:8080/api/products")
+    fetch(`${API_BASE_URL}/api/products`)
       .then((res) => res.json())
       .then((data) => {
         setProducts(data);

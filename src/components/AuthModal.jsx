@@ -1,8 +1,5 @@
 import { useState } from "react";
-
-const API_BASE_URL = (
-  import.meta.env.VITE_API_BASE_URL || "https://fayzo-crochet-api.onrender.com"
-).replace(/\/+$/, "");
+import { API_BASE_URL } from "../utils/api";
 
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [isRegister, setIsRegister] = useState(false);

@@ -18,6 +18,7 @@ import ProductDetailPage from "./pages/ProductDetailPage";
 import SavedTreasuresPage from "./pages/SavedTreasuresPage";
 import ShopPage from "./pages/ShopPage";
 import TrackOrderPage from "./pages/TrackOrderPage";
+import { API_BASE_URL } from "./utils/api";
 
 function readFavoriteIds() {
   try {
@@ -107,12 +108,6 @@ export default function App() {
     return saved ? JSON.parse(saved) : [];
   });
 
-  // Define the API base URL at the top of your component or file
-  const API_BASE_URL = (
-    import.meta.env.VITE_API_BASE_URL ||
-    "https://fayzo-crochet-api.onrender.com"
-  ).replace(/\/+$/, "");
-
   useEffect(() => {
     fetch(`${API_BASE_URL}/api/products`)
       .then((response) => {
@@ -184,7 +179,7 @@ export default function App() {
   const handleLogout = async () => {
     if (authToken) {
       try {
-        await fetch("http://localhost:8080/api/auth/logout", {
+        await fetch(`${API_BASE_URL}/api/auth/logout`, {
           method: "POST",
           headers: { Authorization: `Bearer ${authToken}` },
         });
