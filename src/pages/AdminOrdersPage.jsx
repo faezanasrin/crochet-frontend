@@ -852,24 +852,17 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                   )}
 
                   <div
+                    className="admin-order-actions"
                     style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
                       borderTop: "1px solid #F5EDE8",
                       paddingTop: "1rem",
-                      flexWrap: "wrap",
-                      gap: "10px",
                     }}
                   >
                     <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "8px",
-                      }}
+                      className="admin-order-status"
                     >
                       <span
+                        className="admin-order-status__label"
                         style={{
                           fontSize: "0.85rem",
                           fontWeight: "600",
@@ -886,18 +879,13 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       ].map((step) => (
                         <button
                           key={step.key}
+                          className="admin-order-status__button"
                           onClick={() => handleStatusChange(order.id, step.key)}
                           style={{
                             backgroundColor:
                               order.status === step.key ? "#8B3E54" : "#F4ECE7",
                             color:
                               order.status === step.key ? "#FFF" : "#5A4C48",
-                            border: "none",
-                            padding: "6px 12px",
-                            borderRadius: "8px",
-                            fontSize: "0.75rem",
-                            fontWeight: "700",
-                            cursor: "pointer",
                           }}
                         >
                           {step.label}
@@ -908,16 +896,12 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     {order.paymentMethod === "UPI / GPay" &&
                       order.paymentStatus !== "PAID" && (
                         <button
+                          className="admin-order-actions__payment"
                           onClick={() => handlePaymentConfirmation(order.id)}
                           style={{
                             backgroundColor: "#EAF2EC",
                             color: "#2B5738",
                             border: "1px solid #B9D2C0",
-                            padding: "7px 12px",
-                            borderRadius: "8px",
-                            fontSize: "0.8rem",
-                            fontWeight: "700",
-                            cursor: "pointer",
                           }}
                         >
                           Confirm UPI payment
@@ -925,6 +909,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       )}
 
                     <a
+                      className="admin-order-actions__whatsapp"
                       href={formatWhatsAppLink(
                         order.phone,
                         order.customerName,
@@ -939,11 +924,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                         gap: "6px",
                         backgroundColor: "#25D366",
                         color: "#FFFFFF",
-                        padding: "7px 14px",
-                        borderRadius: "10px",
                         textDecoration: "none",
-                        fontSize: "0.85rem",
-                        fontWeight: "700",
                       }}
                     >
                       💬 Send Status Update on WhatsApp
