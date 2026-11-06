@@ -26,6 +26,9 @@ function OrderCard({ order, authToken, onOpenAuth }) {
   );
   const activeStep = statusIndex < 0 ? 0 : statusIndex;
   const items = getOrderItems(order);
+  const isTerminalOrder = ["REJECTED", "CANCELLED"].includes(order.status);
+  const terminalStatusLabel =
+    order.status === "REJECTED" ? "Order rejected" : "Order cancelled";
 
   return (
     <article className="track-order-card">
@@ -54,22 +57,37 @@ function OrderCard({ order, authToken, onOpenAuth }) {
         </div>
       </header>
 
-      <div
-        className="track-order-timeline"
-        aria-label={`Order status: ${STATUS_STEPS[activeStep].label}`}
-      >
-        {STATUS_STEPS.map((step, index) => (
-          <div
-            className={`track-order-timeline__step${index <= activeStep ? " is-complete" : ""}${index === activeStep ? " is-current" : ""}`}
-            key={step.key}
-          >
-            <span className="track-order-timeline__icon" aria-hidden="true">
-              {step.icon}
-            </span>
-            <span>{step.label}</span>
-          </div>
-        ))}
-      </div>
+      {isTerminalOrder ? (
+        <section
+          className={`track-order-terminal track-order-terminal--${order.status.toLowerCase()}`}
+          aria-label={`Order status: ${terminalStatusLabel}`}
+        >
+          <strong>{terminalStatusLabel}</strong>
+          {order.paymentMethod === "UPI / GPay" && (
+            <p>
+              If you have already paid, your refund will be initiated to your
+              original payment account within 2–5 days.
+            </p>
+          )}
+        </section>
+      ) : (
+        <div
+          className="track-order-timeline"
+          aria-label={`Order status: ${STATUS_STEPS[activeStep].label}`}
+        >
+          {STATUS_STEPS.map((step, index) => (
+            <div
+              className={`track-order-timeline__step${index <= activeStep ? " is-complete" : ""}${index === activeStep ? " is-current" : ""}`}
+              key={step.key}
+            >
+              <span className="track-order-timeline__icon" aria-hidden="true">
+                {step.icon}
+              </span>
+              <span>{step.label}</span>
+            </div>
+          ))}
+        </div>
+      )}
 
       <section className="track-order-card__details">
         <h3>Items in this order</h3>

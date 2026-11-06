@@ -11,10 +11,22 @@ const emptyProduct = {
   inStock: true,
 };
 
+function parseOrderItemsSummary(summary) {
+  if (!summary) return null;
+
+  try {
+    const items = JSON.parse(summary);
+    return Array.isArray(items) ? items : null;
+  } catch {
+    return null;
+  }
+}
+
 export default function AdminOrdersPage({ onProductsChanged }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [statusActionError, setStatusActionError] = useState("");
   const [adminToken, setAdminToken] = useState(
     () => sessionStorage.getItem("crochet_admin_token") || "",
   );
@@ -142,6 +154,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
 
   // Status Update Handler
   const handleStatusChange = async (orderId, newStatus) => {
+    setStatusActionError("");
     try {
       const res = await fetch(
         `${API_BASE_URL}/api/orders/${orderId}/status`,
@@ -154,17 +167,39 @@ export default function AdminOrdersPage({ onProductsChanged }) {
           body: JSON.stringify({ status: newStatus }),
         },
       );
+      const body = await res.json().catch(() => ({}));
 
       if (!res.ok) {
-        throw new Error(`Failed to update order status: ${res.statusText}`);
+        throw new Error(
+          body.error || `Failed to update order status: ${res.statusText}`,
+        );
       }
 
       setOrders((prev) =>
         prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o)),
       );
+      return true;
     } catch (err) {
-      console.error("Failed to update status:", err);
+      setStatusActionError(err.message || "Failed to update order status.");
+      return false;
     }
+  };
+
+  const handleTerminalOrderAction = async (order, newStatus) => {
+    const actionLabel = newStatus === "REJECTED" ? "reject" : "cancel";
+    const refundNotice =
+      order.paymentMethod === "UPI / GPay"
+        ? "\n\nIf the customer has paid, the tracker will tell them their refund will be initiated within 2–5 days."
+        : "";
+    if (
+      !window.confirm(
+        `Are you sure you want to ${actionLabel} order #${order.id}?${refundNotice}`,
+      )
+    ) {
+      return;
+    }
+
+    await handleStatusChange(order.id, newStatus);
   };
 
   const handlePaymentConfirmation = async (orderId) => {
@@ -347,6 +382,10 @@ export default function AdminOrdersPage({ onProductsChanged }) {
         return { bg: "#EBF3FE", color: "#1E62D0", label: "📦 Dispatched" };
       case "COMPLETED":
         return { bg: "#EAF2EC", color: "#2B5738", label: "🌸 Delivered" };
+      case "REJECTED":
+        return { bg: "#FDECEC", color: "#A83232", label: "Rejected" };
+      case "CANCELLED":
+        return { bg: "#F3EDED", color: "#75615D", label: "Cancelled" };
       default:
         return { bg: "#FCE7EE", color: "#8B3E54", label: "⏳ Pending" };
     }
@@ -562,6 +601,12 @@ export default function AdminOrdersPage({ onProductsChanged }) {
         </button>
       </nav>
 
+      {activeTab === "orders" && statusActionError && (
+        <p className="admin-order-action-error" role="alert">
+          {statusActionError}
+        </p>
+      )}
+
       {activeTab === "orders" &&
         (loading ? (
           <p
@@ -606,6 +651,12 @@ export default function AdminOrdersPage({ onProductsChanged }) {
           >
             {orders.map((order) => {
               const badge = getStatusBadgeStyle(order.status);
+              const isTerminalOrder = ["REJECTED", "CANCELLED"].includes(
+                order.status,
+              );
+              const orderedItems = parseOrderItemsSummary(
+                order.orderedItemsSummary,
+              );
               return (
                 <div
                   key={order.id}
@@ -819,17 +870,43 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                           border: "1px solid #F1E5DF",
                         }}
                       >
-                        <pre
-                          style={{
-                            margin: 0,
-                            fontSize: "0.75rem",
-                            color: "#4A3E3D",
-                            whiteSpace: "pre-wrap",
-                            wordBreak: "break-all",
-                          }}
-                        >
-                          {order.orderedItemsSummary}
-                        </pre>
+                        {orderedItems ? (
+                          <ul
+                            style={{
+                              margin: 0,
+                              paddingLeft: "1.2rem",
+                              color: "#4A3E3D",
+                              fontSize: "0.8rem",
+                              lineHeight: 1.6,
+                            }}
+                          >
+                            {orderedItems.map((item, index) => {
+                              const quantity = Number(item.quantity || 0);
+                              const price = Number(item.price || 0);
+                              return (
+                                <li key={`${item.productId || item.name}-${index}`}>
+                                  {item.name || `Product ${item.productId || ""}`}
+                                  {" · Qty: "}
+                                  {quantity}
+                                  {" · ₹"}
+                                  {(price * quantity).toFixed(2)}
+                                </li>
+                              );
+                            })}
+                          </ul>
+                        ) : (
+                          <p
+                            style={{
+                              margin: 0,
+                              fontSize: "0.8rem",
+                              color: "#4A3E3D",
+                              whiteSpace: "pre-wrap",
+                              overflowWrap: "anywhere",
+                            }}
+                          >
+                            {order.orderedItemsSummary || "No item details available."}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -858,9 +935,8 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       paddingTop: "1rem",
                     }}
                   >
-                    <div
-                      className="admin-order-status"
-                    >
+                    {!isTerminalOrder && (
+                      <div className="admin-order-status">
                       <span
                         className="admin-order-status__label"
                         style={{
@@ -880,6 +956,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                         <button
                           key={step.key}
                           className="admin-order-status__button"
+                          type="button"
                           onClick={() => handleStatusChange(order.id, step.key)}
                           style={{
                             backgroundColor:
@@ -891,9 +968,34 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                           {step.label}
                         </button>
                       ))}
-                    </div>
+                      </div>
+                    )}
 
-                    {order.paymentMethod === "UPI / GPay" &&
+                    {!isTerminalOrder && (
+                      <div className="admin-order-terminal-actions">
+                        <button
+                          className="admin-order-terminal-actions__button admin-order-terminal-actions__button--reject"
+                          onClick={() =>
+                            handleTerminalOrderAction(order, "REJECTED")
+                          }
+                          type="button"
+                        >
+                          Reject order
+                        </button>
+                        <button
+                          className="admin-order-terminal-actions__button admin-order-terminal-actions__button--cancel"
+                          onClick={() =>
+                            handleTerminalOrderAction(order, "CANCELLED")
+                          }
+                          type="button"
+                        >
+                          Cancel order
+                        </button>
+                      </div>
+                    )}
+
+                    {!isTerminalOrder &&
+                      order.paymentMethod === "UPI / GPay" &&
                       order.paymentStatus !== "PAID" && (
                         <button
                           className="admin-order-actions__payment"
