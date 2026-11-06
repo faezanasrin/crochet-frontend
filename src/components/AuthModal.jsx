@@ -1,5 +1,9 @@
 import { useState } from "react";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "https://fayzo-crochet-api.onrender.com"
+).replace(/\/+$/, "");
+
 export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
   const [isRegister, setIsRegister] = useState(false);
   const [formData, setFormData] = useState({
@@ -30,7 +34,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
       : { email: formData.email, password: formData.password };
 
     try {
-      const res = await fetch(`http://localhost:8080${endpoint}`, {
+      const res = await fetch(`${API_BASE_URL}${endpoint}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
