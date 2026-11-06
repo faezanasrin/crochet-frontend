@@ -40,20 +40,21 @@ function ProductPolaroid({ product, variant = "main" }) {
 }
 
 export default function HeroBanner({ products = [] }) {
-  const mysteryBox = products.find(
-    (product) => product.category?.toLowerCase() === "mystery box",
-  );
+  const isMysteryBox = (product) =>
+    product.category?.trim().toLowerCase() === "mystery box" ||
+    /mystery box/i.test(product.name || "");
   const floralProducts = products.filter((product) =>
+    !isMysteryBox(product) &&
     /flower|tulip|bouquet|daisy/i.test(
       `${product.name} ${product.category || ""}`,
     ),
   );
   const featuredProducts = [
-    ...(mysteryBox ? [mysteryBox] : []),
     ...floralProducts,
     ...products.filter(
       (product) =>
-        product !== mysteryBox && !floralProducts.includes(product),
+        !isMysteryBox(product) &&
+        !floralProducts.includes(product),
     ),
   ].slice(0, 2);
 
@@ -86,14 +87,6 @@ export default function HeroBanner({ products = [] }) {
               <Link className="cute-hero__primary-btn" to="/shop">
                 Explore the collection <span aria-hidden="true">→</span>
               </Link>
-              {mysteryBox && (
-                <Link
-                  className="cute-hero__mystery-btn"
-                  to={`/products/${encodeURIComponent(mysteryBox.id)}`}
-                >
-                  🎁 Claim 1 of 10 Founder Mystery Boxes →
-                </Link>
-              )}
               <a className="cute-hero__contact-btn" href="/#contact-title">
                 <span aria-hidden="true">♡</span> Ask about a custom order
               </a>
