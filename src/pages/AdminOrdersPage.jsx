@@ -788,16 +788,6 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
                   }}
                 >
-                  <button
-                    aria-label={`Permanently delete order ${order.id}`}
-                    className="admin-order-card__delete"
-                    disabled={isClearingOrders}
-                    onClick={() => handleOrderDelete(order)}
-                    title="Permanently delete order"
-                    type="button"
-                  >
-                    ×
-                  </button>
                   <div
                     style={{
                       display: "flex",
@@ -887,7 +877,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                           : "Recently"}
                       </p>
                     </div>
-                    <div style={{ textAlign: "right" }}>
+                    <div className="admin-order-card__total">
                       <span
                         style={{
                           fontSize: "1.4rem",
@@ -900,6 +890,16 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                           ? Number(order.totalAmount).toFixed(2)
                           : "0.00"}
                       </span>
+                      <button
+                        aria-label={`Permanently delete order ${order.id}`}
+                        className="admin-order-card__delete"
+                        disabled={isClearingOrders}
+                        onClick={() => handleOrderDelete(order)}
+                        title="Permanently delete order"
+                        type="button"
+                      >
+                        ×
+                      </button>
                     </div>
                   </div>
 

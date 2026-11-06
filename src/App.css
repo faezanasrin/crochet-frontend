@@ -1700,13 +1700,10 @@
 }
 
 .admin-order-card__delete {
-  position: absolute;
-  z-index: 1;
-  top: 0.65rem;
-  right: 0.65rem;
   display: grid;
   width: 32px;
   height: 32px;
+  flex: 0 0 32px;
   place-items: center;
   border: 1px solid #e8caca;
   border-radius: 50%;
@@ -1718,9 +1715,30 @@
   cursor: pointer;
 }
 
+.admin-order-card__delete:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.admin-order-card__total {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  margin-left: auto;
+  text-align: right;
+}
+
 .admin-order-card__delete:hover {
   background: #a83232;
   color: #fff;
+}
+
+@media (max-width: 600px) {
+  .admin-order-card__total {
+    width: 100%;
+    justify-content: space-between;
+  }
 }
 
 .admin-order-status {
