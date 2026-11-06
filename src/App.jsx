@@ -114,7 +114,14 @@ export default function App() {
         if (!response.ok) throw new Error("Backend connection failed");
         return response.json();
       })
-      .then(setProducts)
+      .then((data) => {
+        setProducts(data);
+        setFavoriteIds((previous) =>
+          previous.filter((favoriteId) =>
+            data.some((product) => String(product.id) === String(favoriteId)),
+          ),
+        );
+      })
       .catch((error) => console.error("Product API error:", error))
       .finally(() => setLoading(false));
   }, [productsRefreshKey]);

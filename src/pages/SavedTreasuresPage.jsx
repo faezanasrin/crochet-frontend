@@ -9,7 +9,7 @@ export default function SavedTreasuresPage({
   onAddToCart,
 }) {
   const savedProducts = products.filter((product) =>
-    favoriteIds.includes(String(product.id)),
+    favoriteIds.some((id) => String(id) === String(product.id)),
   );
 
   return (
