@@ -2690,6 +2690,11 @@
     padding-inline: 5vw;
   }
 
+  .brand__logo {
+    width: 56px;
+    height: 56px;
+  }
+
   .brand {
     justify-self: start;
   }
@@ -3259,8 +3264,8 @@
   }
 
   .brand__logo {
-    width: 70px;
-    height: 70px;
+    width: 50px;
+    height: 50px;
   }
 
   .product-grid {
