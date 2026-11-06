@@ -26,6 +26,8 @@ function OrderCard({
   onOpenAuth,
   onCancel,
   isCancelling,
+  onDelete,
+  isDeleting,
 }) {
   const statusIndex = STATUS_STEPS.findIndex(
     (step) => step.key === order.status,
@@ -38,6 +40,18 @@ function OrderCard({
 
   return (
     <article className="track-order-card">
+      {["COMPLETED", "REJECTED", "CANCELLED"].includes(order.status) && (
+        <button
+          aria-label={`Remove order ${order.id} from your order history`}
+          className="track-order-card__delete"
+          disabled={isDeleting}
+          onClick={() => onDelete(order)}
+          title="Remove order from your history"
+          type="button"
+        >
+          ×
+        </button>
+      )}
       <header className="track-order-card__header">
         <div>
           <span className="eyebrow">ORDER #{order.id}</span>
@@ -164,6 +178,7 @@ export default function TrackOrderPage({
   const [errorMessage, setErrorMessage] = useState("");
   const [actionError, setActionError] = useState("");
   const [cancellingOrderId, setCancellingOrderId] = useState(null);
+  const [deletingOrderId, setDeletingOrderId] = useState(null);
 
   useEffect(() => {
     if (!authToken || !currentUser) return undefined;
@@ -244,6 +259,38 @@ export default function TrackOrderPage({
     }
   };
 
+  const handleDeleteOrder = async (order) => {
+    if (
+      !window.confirm(
+        `Remove order #${order.id} from your order history? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setActionError("");
+    setDeletingOrderId(order.id);
+    try {
+      const response = await fetch(
+        `${API_BASE_URL}/api/orders/${order.id}/user`,
+        {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${authToken}` },
+        },
+      );
+      const body = await response.json().catch(() => ({}));
+      if (!response.ok) {
+        throw new Error(body.error || "Could not remove this order.");
+      }
+
+      setOrders((previous) => previous.filter((item) => item.id !== order.id));
+    } catch (error) {
+      setActionError(error.message || "Could not remove this order.");
+    } finally {
+      setDeletingOrderId(null);
+    }
+  };
+
   return (
     <main className="track-orders-page">
       <header className="track-orders-page__intro">
@@ -302,6 +349,8 @@ export default function TrackOrderPage({
               onOpenAuth={onOpenAuth}
               onCancel={handleCancelOrder}
               isCancelling={cancellingOrderId === order.id}
+              onDelete={handleDeleteOrder}
+              isDeleting={deletingOrderId === order.id}
             />
           ))}
         </div>

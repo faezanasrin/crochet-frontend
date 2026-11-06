@@ -202,6 +202,34 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     await handleStatusChange(order.id, newStatus);
   };
 
+  const handleOrderDelete = async (order) => {
+    if (
+      !window.confirm(
+        `Permanently delete order #${order.id}? This cannot be undone.`,
+      )
+    ) {
+      return;
+    }
+
+    setStatusActionError("");
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/orders/${order.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${adminToken}` },
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => ({}));
+        throw new Error(body.error || "Could not delete this order.");
+      }
+
+      setOrders((previous) => previous.filter((item) => item.id !== order.id));
+    } catch (requestError) {
+      setStatusActionError(
+        requestError.message || "Could not delete this order.",
+      );
+    }
+  };
+
   useEffect(() => {
     if (!adminToken) return undefined;
 
@@ -670,6 +698,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
               return (
                 <div
                   key={order.id}
+                  className="admin-order-card"
                   style={{
                     backgroundColor: "#FFFFFF",
                     borderRadius: "20px",
@@ -678,6 +707,15 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
                   }}
                 >
+                  <button
+                    aria-label={`Permanently delete order ${order.id}`}
+                    className="admin-order-card__delete"
+                    onClick={() => handleOrderDelete(order)}
+                    title="Permanently delete order"
+                    type="button"
+                  >
+                    ×
+                  </button>
                   <div
                     style={{
                       display: "flex",

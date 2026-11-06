@@ -1679,6 +1679,34 @@
   gap: 10px;
 }
 
+.admin-order-card {
+  position: relative;
+}
+
+.admin-order-card__delete {
+  position: absolute;
+  z-index: 1;
+  top: 0.65rem;
+  right: 0.65rem;
+  display: grid;
+  width: 32px;
+  height: 32px;
+  place-items: center;
+  border: 1px solid #e8caca;
+  border-radius: 50%;
+  background: #fff7f7;
+  color: #a83232;
+  font: inherit;
+  font-size: 1.35rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.admin-order-card__delete:hover {
+  background: #a83232;
+  color: #fff;
+}
+
 .admin-order-status {
   display: flex;
   align-items: center;
@@ -2316,11 +2344,41 @@
 }
 
 .track-order-card {
+  position: relative;
   padding: clamp(1rem, 4vw, 1.6rem);
   border: 1px solid var(--line);
   border-radius: 16px;
   background: #fffdf9;
   box-shadow: 0 6px 20px rgba(83, 61, 43, 0.055);
+}
+
+.track-order-card__delete {
+  position: absolute;
+  z-index: 1;
+  top: 0.55rem;
+  right: 0.55rem;
+  display: grid;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border: 1px solid #e8caca;
+  border-radius: 50%;
+  background: #fff7f7;
+  color: #a83232;
+  font: inherit;
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.track-order-card__delete:hover {
+  background: #a83232;
+  color: #fff;
+}
+
+.track-order-card__delete:disabled {
+  cursor: wait;
+  opacity: 0.65;
 }
 
 .track-order-card__header {
