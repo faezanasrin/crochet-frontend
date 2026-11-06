@@ -23,6 +23,7 @@ The footer contact form sends signed-in customers' messages through Web3Forms to
 1. Create a free access key at [web3forms.com](https://web3forms.com/) using `yarn.diary.studio@gmail.com`. Web3Forms emails the access key to that address.
 2. Copy `.env.example` to `.env.local` in the frontend project root and replace the placeholder value for `VITE_WEB3FORMS_ACCESS_KEY` with your access key.
 3. Restart the Vite development server so it loads the new environment variable.
+4. For production, add `VITE_WEB3FORMS_ACCESS_KEY` to the Vercel project's Environment Variables for the Production environment, then redeploy.
 
 The access key is intended for use in browser forms. Do not put SMTP passwords or other private credentials in `VITE_` variables. See [Web3Forms installation docs](https://docs.web3forms.com/getting-started/installation) for details.
 
