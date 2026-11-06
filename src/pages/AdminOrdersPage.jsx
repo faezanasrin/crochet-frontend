@@ -70,7 +70,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     if (!adminToken) return undefined;
 
     let active = true;
-    fetch(`${API_BASE_URL}/api/products`)
+    fetch(`${API_BASE_URL}/api/products`, { cache: "no-store" })
       .then(async (response) => {
         if (!response.ok) {
           const body = await response.json().catch(() => ({}));

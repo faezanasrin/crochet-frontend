@@ -162,6 +162,16 @@ export default function ProductDetailPage({
           >
             ₹{Number(product.price).toFixed(2)}
           </div>
+          <p
+            className={`product-detail__availability ${
+              product.inStock
+                ? "product-detail__availability--available"
+                : "product-detail__availability--unavailable"
+            }`}
+            role="status"
+          >
+            {product.inStock ? "✓ In stock" : "Out of stock"}
+          </p>
 
           <p
             style={{

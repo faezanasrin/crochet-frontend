@@ -109,21 +109,61 @@ export default function App() {
   });
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/products`)
-      .then((response) => {
+    let active = true;
+    let isFetching = false;
+
+    const refreshProducts = async () => {
+      if (!active || isFetching) return;
+      isFetching = true;
+
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/products`, {
+          cache: "no-store",
+        });
         if (!response.ok) throw new Error("Backend connection failed");
-        return response.json();
-      })
-      .then((data) => {
+        const data = await response.json();
+        if (!active) return;
+
         setProducts(data);
         setFavoriteIds((previous) =>
           previous.filter((favoriteId) =>
             data.some((product) => String(product.id) === String(favoriteId)),
           ),
         );
-      })
-      .catch((error) => console.error("Product API error:", error))
-      .finally(() => setLoading(false));
+        setCart((previous) => {
+          const currentProducts = new Map(
+            data.map((product) => [String(product.id), product]),
+          );
+          return previous.map((item) => {
+            const currentProduct = currentProducts.get(String(item.id));
+            return currentProduct
+              ? { ...item, ...currentProduct, qty: item.qty }
+              : item;
+          });
+        });
+      } catch (error) {
+        if (active) console.error("Product API error:", error);
+      } finally {
+        isFetching = false;
+        if (active) setLoading(false);
+      }
+    };
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState === "visible") refreshProducts();
+    };
+
+    refreshProducts();
+    const refreshInterval = window.setInterval(refreshProducts, 60_000);
+    window.addEventListener("focus", refreshProducts);
+    document.addEventListener("visibilitychange", refreshWhenVisible);
+
+    return () => {
+      active = false;
+      window.clearInterval(refreshInterval);
+      window.removeEventListener("focus", refreshProducts);
+      document.removeEventListener("visibilitychange", refreshWhenVisible);
+    };
   }, [productsRefreshKey]);
 
   useEffect(() => {
@@ -144,6 +184,8 @@ export default function App() {
   };
 
   const addToCart = (item) => {
+    if (item.inStock === false) return;
+
     setCart((previous) => {
       const existing = previous.find((product) => product.id === item.id);
       if (existing) {

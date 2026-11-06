@@ -8,6 +8,7 @@ export default function CartDrawer({
   onCheckout,
 }) {
   if (!isOpen) return null;
+  const hasOutOfStockItems = cart.some((item) => item.inStock === false);
 
   return (
     <div className="cart-overlay" onMouseDown={onClose}>
@@ -54,6 +55,15 @@ export default function CartDrawer({
                 <div className="cart-item__details">
                   <strong>{item.name}</strong>
                   <span>₹{Number(item.price).toFixed(2)} each</span>
+                  <span
+                    className={`cart-item__stock ${
+                      item.inStock === false
+                        ? "cart-item__stock--unavailable"
+                        : "cart-item__stock--available"
+                    }`}
+                  >
+                    {item.inStock === false ? "Out of stock" : "In stock"}
+                  </span>
                   <div className="cart-item__quantity">
                     <span className="cart-item__quantity-label">Quantity</span>
                     <div
@@ -81,6 +91,7 @@ export default function CartDrawer({
                         className="cart-quantity-button"
                         type="button"
                         onClick={() => onUpdateQuantity(item.id, 1)}
+                        disabled={item.inStock === false}
                         aria-label={`Increase ${item.name} quantity`}
                       >
                         +
@@ -110,10 +121,15 @@ export default function CartDrawer({
             <strong>₹{total}</strong>
           </div>
           <p>Shipping and any discounts are calculated at checkout.</p>
+          {hasOutOfStockItems && (
+            <p className="cart-drawer__stock-warning" role="alert">
+              Remove out-of-stock items before checking out.
+            </p>
+          )}
           <button
             className="checkout-button"
             onClick={onCheckout}
-            disabled={cart.length === 0}
+            disabled={cart.length === 0 || hasOutOfStockItems}
           >
             Checkout <span aria-hidden="true">→</span>
           </button>

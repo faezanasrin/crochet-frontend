@@ -46,6 +46,15 @@ export default function ProductCard({
           <p className="product-card__kicker">
             {product.yarnType || "Made with love"}
           </p>
+          <p
+            className={`product-card__availability ${
+              product.inStock
+                ? "product-card__availability--available"
+                : "product-card__availability--unavailable"
+            }`}
+          >
+            {product.inStock ? "In stock" : "Out of stock"}
+          </p>
           <h3>
             <Link
               className="product-card__title-link"
