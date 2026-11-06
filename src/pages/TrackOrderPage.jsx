@@ -40,18 +40,6 @@ function OrderCard({
 
   return (
     <article className="track-order-card">
-      {["COMPLETED", "REJECTED", "CANCELLED"].includes(order.status) && (
-        <button
-          aria-label={`Remove order ${order.id} from your order history`}
-          className="track-order-card__delete"
-          disabled={isDeleting}
-          onClick={() => onDelete(order)}
-          title="Remove order from your history"
-          type="button"
-        >
-          ×
-        </button>
-      )}
       <header className="track-order-card__header">
         <div>
           <span className="eyebrow">ORDER #{order.id}</span>
@@ -65,7 +53,21 @@ function OrderCard({
           </p>
         </div>
         <div className="track-order-card__amount">
-          <strong>₹{Number(order.totalAmount || 0).toFixed(2)}</strong>
+          <div className="track-order-card__amount-primary">
+            <strong>₹{Number(order.totalAmount || 0).toFixed(2)}</strong>
+            {["COMPLETED", "REJECTED", "CANCELLED"].includes(order.status) && (
+              <button
+                aria-label={`Remove order ${order.id} from your order history`}
+                className="track-order-card__delete"
+                disabled={isDeleting}
+                onClick={() => onDelete(order)}
+                title="Remove order from your history"
+                type="button"
+              >
+                ×
+              </button>
+            )}
+          </div>
           <span>{order.paymentMethod || "Payment preference not set"}</span>
           {order.paymentMethod === "UPI / GPay" && (
             <span className="track-order-card__payment-status">

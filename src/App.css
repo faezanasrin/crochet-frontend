@@ -2353,13 +2353,10 @@
 }
 
 .track-order-card__delete {
-  position: absolute;
-  z-index: 1;
-  top: 0.55rem;
-  right: 0.55rem;
   display: grid;
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 32px;
   place-items: center;
   border: 1px solid #e8caca;
   border-radius: 50%;
@@ -2383,7 +2380,9 @@
 
 .track-order-card__header {
   display: flex;
+  align-items: flex-start;
   justify-content: space-between;
+  min-width: 0;
   gap: 1rem;
   padding-bottom: 0.9rem;
   border-bottom: 1px solid #eee4da;
@@ -2397,15 +2396,25 @@
 
 .track-order-card__amount {
   display: grid;
+  min-width: 0;
+  flex: 0 0 auto;
   align-content: start;
   justify-items: end;
   gap: 0.25rem;
   text-align: right;
 }
 
+.track-order-card__amount-primary {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+}
+
 .track-order-card__amount strong {
   color: var(--berry-dark);
   font-size: 1.05rem;
+  white-space: nowrap;
 }
 
 .track-order-card__amount span {
