@@ -856,6 +856,22 @@
   font-weight: 700;
 }
 
+.product-card__limited-badge {
+  position: absolute;
+  z-index: 1;
+  top: 0.75rem;
+  left: 0.75rem;
+  max-width: calc(100% - 4.5rem);
+  padding: 0.42rem 0.65rem;
+  border-radius: 999px;
+  background: #8b3e54;
+  box-shadow: 0 4px 12px rgba(139, 62, 84, 0.3);
+  color: #fff;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
 .product-card__heart {
   z-index: 1;
   position: absolute;
@@ -2878,6 +2894,34 @@
 
 .product-detail__availability {
   margin-bottom: 1.1rem;
+}
+
+.mystery-box-details {
+  margin: 1.4rem 0;
+  padding: 1.2rem 1.4rem;
+  border: 1.5px dashed #d8b7a5;
+  border-radius: 18px;
+  background: #fff9f5;
+  color: #5a4c48;
+  font-size: 0.86rem;
+  line-height: 1.7;
+}
+
+.mystery-box-details h2 {
+  margin: 0 0 0.6rem;
+  color: #6a3845;
+  font-size: 1rem;
+}
+
+.mystery-box-details ul {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.mystery-box-details p {
+  margin: 0.7rem 0 0;
+  color: #806f61;
+  font-size: 0.78rem;
 }
 
 .product-detail__description {

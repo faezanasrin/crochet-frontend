@@ -3,6 +3,7 @@ import ProductGrid from "../components/ProductGrid";
 
 const CATEGORIES = [
   { id: "All", label: "Everything", icon: "✨" },
+  { id: "Mystery Box", label: "Mystery Box 🎁", icon: "🎁" },
   { id: "Bookmarks", label: "Bookmarks", icon: "📚" },
   { id: "Flowers", label: "Flowers", icon: "🌸" },
   { id: "Bouquets", label: "Bouquets", icon: "💐" },
@@ -20,20 +21,28 @@ export default function ShopPage({
   const [searchQuery, setSearchQuery] = useState("");
 
   const filteredProducts = useMemo(() => {
-    return products.filter((product) => {
-      const matchesCategory =
-        selectedCategory === "All" ||
-        product.category?.toLowerCase() === selectedCategory.toLowerCase();
+    return products
+      .filter((product) => {
+        const matchesCategory =
+          selectedCategory === "All" ||
+          product.category?.toLowerCase() === selectedCategory.toLowerCase();
 
-      const query = searchQuery.trim().toLowerCase();
-      const matchesSearch =
-        !query ||
-        product.name?.toLowerCase().includes(query) ||
-        product.yarnType?.toLowerCase().includes(query) ||
-        product.category?.toLowerCase().includes(query);
+        const query = searchQuery.trim().toLowerCase();
+        const matchesSearch =
+          !query ||
+          product.name?.toLowerCase().includes(query) ||
+          product.yarnType?.toLowerCase().includes(query) ||
+          product.category?.toLowerCase().includes(query);
 
-      return matchesCategory && matchesSearch;
-    });
+        return matchesCategory && matchesSearch;
+      })
+      .sort((first, second) => {
+        const firstIsMysteryBox =
+          first.category?.toLowerCase() === "mystery box";
+        const secondIsMysteryBox =
+          second.category?.toLowerCase() === "mystery box";
+        return Number(secondIsMysteryBox) - Number(firstIsMysteryBox);
+      });
   }, [products, selectedCategory, searchQuery]);
 
   const categories = useMemo(() => {
