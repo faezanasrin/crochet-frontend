@@ -2,6 +2,10 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { QRCodeSVG } from "qrcode.react";
 
+const API_BASE_URL = (
+  import.meta.env.VITE_API_BASE_URL || "https://fayzo-crochet-api.onrender.com"
+).replace(/\/+$/, "");
+
 const UPI_ID = "faezanasrinmb@oksbi";
 const UPI_PAYEE_NAME = "Fayzo Crochet Co.";
 
@@ -229,7 +233,7 @@ export default function CheckoutModal({
     };
 
     try {
-      const response = await fetch("http://localhost:8080/api/orders", {
+      const response = await fetch(`${API_BASE_URL}/api/orders`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
