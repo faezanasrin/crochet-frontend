@@ -8,7 +8,6 @@ export default function ProductCard({
   onToggleFavorite,
 }) {
   const imageUrl = getProductImageUrl(product);
-  const isMysteryBox = product.category?.toLowerCase() === "mystery box";
 
   return (
     <article className="product-card">
@@ -25,15 +24,9 @@ export default function ProductCard({
               🧸
             </span>
           )}
-          {isMysteryBox ? (
-            <span className="product-card__limited-badge">
-              ✨ LIMITED EDITION · 10 ONLY
-            </span>
-          ) : (
-            <span className="product-card__tag">
-              {product.category || "Handmade"}
-            </span>
-          )}
+          <span className="product-card__tag">
+            {product.category || "Handmade"}
+          </span>
           {!product.inStock && (
             <span className="product-card__stock-tag">Out of stock</span>
           )}

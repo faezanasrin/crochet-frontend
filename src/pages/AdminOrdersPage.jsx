@@ -410,7 +410,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
       ? productNames.join(", ")
       : "your handmade items";
 
-    let message = `Hello ${customerName}! 🌸 Update about ${products}: `;
+    let message = `Hello ${order.giftSenderName || customerName}! 🌸 Update about ${products}: `;
     if (status === "CROCHETING")
       message += "We have started crocheting your pieces! 🧶";
     else if (status === "DISPATCHED")
@@ -874,6 +874,19 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       >
                         {order.customerName}
                       </p>
+                      {order.isGiftOrder && (
+                        <div className="admin-order-gift">
+                          <strong>🎁 Gift order</strong>
+                          <span>From: {order.giftSenderName || "Customer"}</span>
+                          <span>
+                            Recipient: {order.giftRecipientName || order.customerName}
+                          </span>
+                          {order.giftMessage && (
+                            <span>Card note: “{order.giftMessage}”</span>
+                          )}
+                          <span>No invoice or pricing slips in parcel</span>
+                        </div>
+                      )}
                       <p
                         style={{
                           margin: "2px 0",
@@ -1087,7 +1100,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       className="admin-order-actions__whatsapp"
                       href={formatWhatsAppLink(
                         order.phone,
-                        order.customerName,
+                        order.giftSenderName || order.customerName,
                         order,
                         order.status,
                       )}

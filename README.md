@@ -31,6 +31,8 @@ The access key is intended for use in browser forms. Do not put SMTP passwords o
 
 Checkout generates a UPI QR code and an `upi://pay` link for the full order amount, using the merchant UPI ID configured in `src/components/CheckoutModal.jsx`. Customers enter the UTR after paying. This is a manual transfer flow, not a payment gateway: the backend marks UPI orders as pending, and the admin must verify the transfer in GPay and select **Confirm UPI payment** in the order dashboard. Update `UPI_ID` in the checkout component if the receiving UPI ID changes.
 
+Checkout also offers an optional ₹150 gift service with recipient delivery details and a handwritten card note. The backend validates and stores those details and adds the gift fee to the server-calculated order total. Gift parcels are marked to exclude invoices and pricing slips.
+
 ## Admin product inventory
 
 Sign in at `/admin` and choose **Inventory / Add Product** to add, edit, delete, or mark products in/out of stock. Product create/update/delete endpoints require the admin bearer session. Out-of-stock items remain listed but cannot be added to the basket. New categories are automatically added to the shop category filters.

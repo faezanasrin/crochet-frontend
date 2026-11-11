@@ -12,6 +12,11 @@ const initialFormData = {
   address: "",
   pincode: "",
   customNotes: "",
+  isGiftOrder: false,
+  giftRecipientName: "",
+  giftRecipientAddress: "",
+  giftRecipientPincode: "",
+  giftMessage: "",
   paymentMethod: "UPI",
 };
 
@@ -61,6 +66,9 @@ function downloadReceipt(receipt) {
     .join("");
   const notesMarkup = receipt.customNotes
     ? `<section class="receipt-section receipt-notes"><span>Customization notes</span><p>${escapeHtml(receipt.customNotes)}</p></section>`
+    : "";
+  const giftMarkup = receipt.isGiftOrder
+    ? `<section class="receipt-section"><span>Gift delivery</span><strong>${escapeHtml(receipt.giftRecipientName)}</strong><p>${escapeHtml(receipt.giftRecipientAddress)}, ${escapeHtml(receipt.giftRecipientPincode)}</p><p>Handwritten card: ${escapeHtml(receipt.giftMessage)}</p><p>No invoice or pricing slips will be included in the parcel.</p></section>`
     : "";
   const receiptHtml = `<!doctype html>
 <html lang="en">
@@ -114,7 +122,7 @@ function downloadReceipt(receipt) {
     <section class="receipt-meta">
       <div class="receipt-meta__field"><span>Receipt reference</span><strong>${escapeHtml(receipt.receiptNumber)}</strong></div>
       <div class="receipt-meta__field"><span>Order date</span><strong>${escapeHtml(formatReceiptDate(receipt.orderDate))}</strong></div>
-      <div class="receipt-meta__field"><span>Customer</span><strong>${escapeHtml(receipt.customerName)}</strong></div>
+      <div class="receipt-meta__field"><span>Customer</span><strong>${escapeHtml(receipt.giftSenderName || receipt.customerName)}</strong></div>
       <div class="receipt-meta__field"><span>Phone</span><strong>${escapeHtml(receipt.phone)}</strong></div>
       <div class="receipt-meta__field receipt-meta__field--wide"><span>Delivery address</span><strong>${escapeHtml(receipt.address)}, ${escapeHtml(receipt.pincode)}</strong></div>
     </section>
@@ -122,9 +130,11 @@ function downloadReceipt(receipt) {
       <div class="receipt-items__heading"><span>Item</span><span>Amount</span></div>
       ${itemsMarkup}
     </section>
+    ${giftMarkup}
     <section class="receipt-totals">
       <div class="receipt-total-row"><span>Subtotal</span><span>₹${Number(receipt.subtotal).toFixed(2)}</span></div>
       <div class="receipt-total-row"><span>Delivery</span><span>${Number(receipt.deliveryCharge) === 0 ? "FREE" : `₹${Number(receipt.deliveryCharge).toFixed(2)}`}</span></div>
+      ${Number(receipt.giftWrapFee) > 0 ? `<div class="receipt-total-row"><span>Gift packaging</span><span>₹${Number(receipt.giftWrapFee).toFixed(2)}</span></div>` : ""}
       <div class="receipt-total-row receipt-total-row--grand"><span>Grand total</span><span>₹${Number(receipt.totalAmount).toFixed(2)}</span></div>
     </section>
     <section class="receipt-section">
@@ -174,7 +184,8 @@ export default function CheckoutModal({
   const [paymentUtr, setPaymentUtr] = useState("");
   const subtotal = Number(totalAmount);
   const deliveryCharge = subtotal >= 499 ? 0 : 49;
-  const grandTotal = subtotal + deliveryCharge;
+  const giftWrapFee = formData.isGiftOrder ? 150 : 0;
+  const grandTotal = subtotal + deliveryCharge + giftWrapFee;
   const amountToFreeDelivery = Math.max(0, 499 - subtotal);
 
   if (!isOpen) return null;
@@ -214,6 +225,17 @@ export default function CheckoutModal({
 
     const orderPayload = {
       ...formData,
+      customerName: formData.isGiftOrder
+        ? formData.giftRecipientName
+        : formData.customerName,
+      address: formData.isGiftOrder
+        ? formData.giftRecipientAddress
+        : formData.address,
+      pincode: formData.isGiftOrder
+        ? formData.giftRecipientPincode
+        : formData.pincode,
+      giftSenderName: formData.isGiftOrder ? formData.customerName : "",
+      giftWrapFee,
       paymentMethod: "UPI",
       customerEmail: currentUser?.email,
       paymentReference: paymentUtr.trim(),
@@ -322,7 +344,7 @@ export default function CheckoutModal({
               </div>
               <div>
                 <span>Customer</span>
-                <strong>{receipt.customerName}</strong>
+                <strong>{receipt.giftSenderName || receipt.customerName}</strong>
               </div>
               <div>
                 <span>Phone</span>
@@ -335,6 +357,13 @@ export default function CheckoutModal({
                 </strong>
               </div>
             </div>
+            {receipt.isGiftOrder && (
+              <div className="order-receipt__gift">
+                <span>🎁 Gift for {receipt.giftRecipientName}</span>
+                <p>Handwritten card: {receipt.giftMessage}</p>
+                <p>No invoice or pricing slips will be included in the parcel.</p>
+              </div>
+            )}
 
             <div className="order-receipt__items">
               <div className="order-receipt__items-heading">
@@ -367,6 +396,12 @@ export default function CheckoutModal({
                     : `₹${receipt.deliveryCharge.toFixed(2)}`}
                 </span>
               </div>
+              {receipt.giftWrapFee > 0 && (
+                <div>
+                  <span>Gift packaging</span>
+                  <span>₹{receipt.giftWrapFee.toFixed(2)}</span>
+                </div>
+              )}
               <div className="order-receipt__grand-total">
                 <strong>Grand total</strong>
                 <strong>₹{receipt.totalAmount.toFixed(2)}</strong>
@@ -389,7 +424,6 @@ export default function CheckoutModal({
                 <p>{receipt.customNotes}</p>
               </div>
             )}
-
             <p className="order-receipt__thanks">
               Your order is received. UPI payment will be verified before we
               begin making your treasures.
@@ -451,6 +485,12 @@ export default function CheckoutModal({
                       : `₹${deliveryCharge.toFixed(2)}`}
                   </strong>
                 </div>
+                {giftWrapFee > 0 && (
+                  <div>
+                    <span>Gift packaging</span>
+                    <strong>₹{giftWrapFee.toFixed(2)}</strong>
+                  </div>
+                )}
                 {amountToFreeDelivery > 0 && (
                   <p className="checkout-delivery-hint">
                     Add ₹{amountToFreeDelivery.toFixed(2)} more to unlock FREE
@@ -464,7 +504,7 @@ export default function CheckoutModal({
               </div>
 
               <label className="checkout-field">
-                <span>Full name <b>*</b></span>
+                <span>{formData.isGiftOrder ? "Your name" : "Full name"} <b>*</b></span>
                 <input
                   type="text"
                   name="customerName"
@@ -489,34 +529,114 @@ export default function CheckoutModal({
                 />
               </label>
 
-              <label className="checkout-field">
-                <span>Delivery address <b>*</b></span>
-                <textarea
-                  name="address"
-                  autoComplete="street-address"
-                  rows="2"
-                  placeholder="House / flat, street, landmark, city"
-                  value={formData.address}
-                  onChange={handleChange}
-                  required
+              <label className="checkout-gift-toggle">
+                <input
+                  type="checkbox"
+                  name="isGiftOrder"
+                  checked={formData.isGiftOrder}
+                  onChange={(event) => {
+                    setFormData((current) => ({
+                      ...current,
+                      isGiftOrder: event.target.checked,
+                    }));
+                    setUpiReference("");
+                    setPaymentUtr("");
+                    setErrorMessage("");
+                  }}
                 />
+                <span>🎁 Sending directly to someone special? (₹150)</span>
               </label>
 
-              <label className="checkout-field">
-                <span>PIN code <b>*</b></span>
-                <input
-                  type="text"
-                  name="pincode"
-                  inputMode="numeric"
-                  autoComplete="postal-code"
-                  pattern="[0-9]{6}"
-                  maxLength="6"
-                  placeholder="6-digit PIN code"
-                  value={formData.pincode}
-                  onChange={handleChange}
-                  required
-                />
-              </label>
+              {formData.isGiftOrder ? (
+                <section className="checkout-gift-fields" aria-label="Gift delivery details">
+                  <p>
+                    We’ll send the parcel to your recipient, include your
+                    handwritten card, and leave out all invoices and pricing
+                    slips.
+                  </p>
+                  <label className="checkout-field">
+                    <span>Recipient’s name <b>*</b></span>
+                    <input
+                      type="text"
+                      name="giftRecipientName"
+                      autoComplete="off"
+                      value={formData.giftRecipientName}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                  <label className="checkout-field">
+                    <span>Recipient’s address <b>*</b></span>
+                    <textarea
+                      name="giftRecipientAddress"
+                      autoComplete="off"
+                      rows="2"
+                      placeholder="House / flat, street, landmark, city"
+                      value={formData.giftRecipientAddress}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                  <label className="checkout-field">
+                    <span>Recipient’s PIN code <b>*</b></span>
+                    <input
+                      type="text"
+                      name="giftRecipientPincode"
+                      inputMode="numeric"
+                      autoComplete="off"
+                      pattern="[0-9]{6}"
+                      maxLength="6"
+                      placeholder="6-digit PIN code"
+                      value={formData.giftRecipientPincode}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                  <label className="checkout-field">
+                    <span>Handwritten card note <b>*</b></span>
+                    <textarea
+                      name="giftMessage"
+                      rows="3"
+                      maxLength="300"
+                      placeholder="Write a little message for their card..."
+                      value={formData.giftMessage}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                </section>
+              ) : (
+                <>
+                  <label className="checkout-field">
+                    <span>Delivery address <b>*</b></span>
+                    <textarea
+                      name="address"
+                      autoComplete="street-address"
+                      rows="2"
+                      placeholder="House / flat, street, landmark, city"
+                      value={formData.address}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+
+                  <label className="checkout-field">
+                    <span>PIN code <b>*</b></span>
+                    <input
+                      type="text"
+                      name="pincode"
+                      inputMode="numeric"
+                      autoComplete="postal-code"
+                      pattern="[0-9]{6}"
+                      maxLength="6"
+                      placeholder="6-digit PIN code"
+                      value={formData.pincode}
+                      onChange={handleChange}
+                      required
+                    />
+                  </label>
+                </>
+              )}
 
               <label className="checkout-field">
                 <span>

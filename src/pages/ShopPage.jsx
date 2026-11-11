@@ -3,7 +3,6 @@ import ProductGrid from "../components/ProductGrid";
 
 const CATEGORIES = [
   { id: "All", label: "Everything", icon: "✨" },
-  { id: "Mystery Box", label: "Mystery Box 🎁", icon: "🎁" },
   { id: "Bookmarks", label: "Bookmarks", icon: "📚" },
   { id: "Flowers", label: "Flowers", icon: "🌸" },
   { id: "Bouquets", label: "Bouquets", icon: "💐" },
@@ -35,13 +34,6 @@ export default function ShopPage({
           product.category?.toLowerCase().includes(query);
 
         return matchesCategory && matchesSearch;
-      })
-      .sort((first, second) => {
-        const firstIsMysteryBox =
-          first.category?.toLowerCase() === "mystery box";
-        const secondIsMysteryBox =
-          second.category?.toLowerCase() === "mystery box";
-        return Number(secondIsMysteryBox) - Number(firstIsMysteryBox);
       });
   }, [products, selectedCategory, searchQuery]);
 

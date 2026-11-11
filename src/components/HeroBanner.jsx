@@ -40,22 +40,14 @@ function ProductPolaroid({ product, variant = "main" }) {
 }
 
 export default function HeroBanner({ products = [] }) {
-  const isMysteryBox = (product) =>
-    product.category?.trim().toLowerCase() === "mystery box" ||
-    /mystery box/i.test(product.name || "");
   const floralProducts = products.filter((product) =>
-    !isMysteryBox(product) &&
     /flower|tulip|bouquet|daisy/i.test(
       `${product.name} ${product.category || ""}`,
     ),
   );
   const featuredProducts = [
     ...floralProducts,
-    ...products.filter(
-      (product) =>
-        !isMysteryBox(product) &&
-        !floralProducts.includes(product),
-    ),
+    ...products.filter((product) => !floralProducts.includes(product)),
   ].slice(0, 2);
 
   return (
