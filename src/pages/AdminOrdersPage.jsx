@@ -26,6 +26,10 @@ function isUpiOrder(order) {
   return order.paymentMethod === "UPI" || order.paymentMethod === "UPI / GPay";
 }
 
+function isGiftOrder(order) {
+  return order.isGiftOrder === true || order.isGiftOrder === "true";
+}
+
 export default function AdminOrdersPage({ onProductsChanged }) {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -415,7 +419,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     const recipientName = order.giftRecipientName || order.customerName;
     let message;
 
-    if (order.isGiftOrder) {
+    if (isGiftOrder(order)) {
       message = `Hello ${senderName}! 🌸 We’re crafting your gift order for ${recipientName}: ${products}. `;
       if (status === "CROCHETING")
         message += "We’ve started crocheting your thoughtful surprise! 🧶";
@@ -752,6 +756,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
           >
             {orders.map((order) => {
               const badge = getStatusBadgeStyle(order.status);
+              const isGift = isGiftOrder(order);
               const isTerminalOrder = ["REJECTED", "CANCELLED"].includes(
                 order.status,
               );
@@ -766,15 +771,15 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     backgroundColor: "#FFFFFF",
                     borderRadius: "20px",
                     padding: "1.5rem",
-                    border: order.isGiftOrder
+                    border: isGift
                       ? "2px solid #E7B6C3"
                       : "1px solid #EFE5DF",
-                    boxShadow: order.isGiftOrder
+                    boxShadow: isGift
                       ? "0 8px 24px rgba(231, 145, 168, 0.16)"
                       : "0 4px 14px rgba(0,0,0,0.04)",
                   }}
                 >
-                  {order.isGiftOrder && (
+                  {isGift && (
                     <div className="admin-order-gift-banner">
                       <span>🎁 Special gift order · ribbon &amp; card</span>
                       <span>🚫 No invoice or pricing slips</span>
@@ -833,7 +838,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                         >
                           {order.paymentMethod}
                         </span>
-                        {order.isGiftOrder && (
+                        {isGift && (
                           <span className="admin-order-gift-badge">
                             🎁 Sending to someone special
                           </span>
@@ -916,7 +921,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                           color: "#8B3E54",
                         }}
                       >
-                        {order.isGiftOrder
+                        {isGift
                           ? "Gift recipient & shipping"
                           : "Customer & Shipping"}
                       </h4>
@@ -929,7 +934,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       >
                         {order.customerName}
                       </p>
-                      {order.isGiftOrder && (
+                      {isGift && (
                         <div className="admin-order-gift">
                           <div className="admin-order-gift__heading">
                             <span className="admin-order-gift__icon" aria-hidden="true">
