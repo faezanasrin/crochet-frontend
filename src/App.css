@@ -2998,20 +2998,147 @@
 
 @media (max-width: 520px) {
   .checkout-overlay {
-    padding: 0.65rem;
+    align-items: stretch;
+    padding: 0;
+  }
+
+  .checkout-modal {
+    width: 100%;
+    height: 100vh;
+    height: 100dvh;
+    max-height: 100vh;
+    max-height: 100dvh;
+    padding: 0 1rem max(1rem, env(safe-area-inset-bottom));
+    border: 0;
+    border-radius: 0;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .checkout-modal__header {
+    position: sticky;
+    z-index: 2;
+    top: 0;
+    margin: 0 -1rem;
+    padding:
+      max(1rem, env(safe-area-inset-top))
+      1rem
+      0.85rem;
+    background: #fbf8f1;
+  }
+
+  .checkout-modal__header h2,
+  .checkout-success h2 {
+    font-size: 1.55rem;
+  }
+
+  .checkout-summary {
+    margin: 0.75rem 0;
+    padding: 0.75rem 0.85rem;
+  }
+
+  .checkout-form {
+    gap: 0.8rem;
+  }
+
+  .checkout-field input,
+  .checkout-field textarea {
+    min-height: 46px;
+    padding: 0.75rem 0.8rem;
+    font-size: 16px;
+  }
+
+  .checkout-field textarea {
+    min-height: 84px;
+  }
+
+  .checkout-gift-toggle {
+    align-items: center;
+    min-height: 48px;
+    padding: 0.75rem 0.85rem;
+    line-height: 1.45;
+  }
+
+  .checkout-gift-toggle input {
+    width: 1.2rem;
+    height: 1.2rem;
+  }
+
+  .checkout-gift-fields,
+  .checkout-upi {
+    padding: 0.8rem;
+  }
+
+  .checkout-upi__payment {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+    padding: 0.7rem;
+  }
+
+  .checkout-upi__payment svg {
+    width: min(176px, 100%);
+    align-self: center;
+  }
+
+  .checkout-upi__open {
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .checkout-submit {
+    min-height: 52px;
+    padding-inline: 0.75rem;
+    line-height: 1.4;
   }
 
   .checkout-modal--receipt {
-    max-height: 94vh;
-    padding: 0.65rem;
+    padding:
+      max(0.65rem, env(safe-area-inset-top))
+      0.65rem
+      max(0.65rem, env(safe-area-inset-bottom));
   }
 
   .order-receipt-wrap {
-    padding-inline: 0.95rem;
+    width: 100%;
+    padding: 1rem 0.95rem 1.1rem;
   }
 
   .order-receipt__meta {
     gap: 0.7rem;
+  }
+
+  .order-receipt__actions {
+    grid-template-columns: 1fr;
+  }
+
+  .order-receipt__actions > button {
+    min-height: 46px;
+  }
+}
+
+@media (max-width: 380px) {
+  .checkout-totals {
+    padding: 0.8rem;
+    font-size: 0.78rem;
+  }
+
+  .checkout-totals__grand {
+    font-size: 0.88rem;
+  }
+
+  .order-receipt__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .order-receipt__address {
+    grid-column: auto;
+  }
+
+  .order-receipt__track-link {
+    width: 100%;
+    text-align: center;
   }
 }
 
