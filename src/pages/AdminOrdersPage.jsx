@@ -37,6 +37,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
   const [refreshKey, setRefreshKey] = useState(0);
   const [passwordInput, setPasswordInput] = useState("");
   const [authError, setAuthError] = useState("");
+  const [giftNoteCopyState, setGiftNoteCopyState] = useState(null);
   const [activeTab, setActiveTab] = useState("orders");
   const [products, setProducts] = useState([]);
   const [productsLoading, setProductsLoading] = useState(true);
@@ -410,20 +411,41 @@ export default function AdminOrdersPage({ onProductsChanged }) {
       ? productNames.join(", ")
       : "your handmade items";
 
-    let message = `Hello ${order.giftSenderName || customerName}! 🌸 Update about ${products}: `;
-    if (status === "CROCHETING")
-      message += "We have started crocheting your pieces! 🧶";
-    else if (status === "DISPATCHED")
-      message += "Your parcel has been handed over for delivery! 📦";
-    else if (status === "COMPLETED")
-      message +=
-        "Your handmade order has been delivered! We hope you love it! 🌷";
-    else if (status === "CANCELLED")
-      message +=
-        "We’re sorry, but your order for these items has been cancelled.";
-    else if (status === "REJECTED")
-      message += "We’re sorry, but your order for these items has been rejected.";
-    else message += "Your order has been received and confirmed!";
+    const senderName = order.giftSenderName || customerName;
+    const recipientName = order.giftRecipientName || order.customerName;
+    let message;
+
+    if (order.isGiftOrder) {
+      message = `Hello ${senderName}! 🌸 We’re crafting your gift order for ${recipientName}: ${products}. `;
+      if (status === "CROCHETING")
+        message += "We’ve started crocheting your thoughtful surprise! 🧶";
+      else if (status === "DISPATCHED")
+        message +=
+          "Your gift parcel, with its handwritten card, is on its way! 📦🎀";
+      else if (status === "COMPLETED")
+        message +=
+          `Your gift parcel has been delivered to ${recipientName}! We hope they love it! 🌷`;
+      else if (status === "CANCELLED")
+        message += "We’re sorry, but the gift order has been cancelled.";
+      else if (status === "REJECTED")
+        message += "We’re sorry, but we’re unable to fulfill this gift order.";
+      else message += "We’ve received your order and are preparing your gift wrap!";
+    } else {
+      message = `Hello ${customerName}! 🌸 Update about ${products}: `;
+      if (status === "CROCHETING")
+        message += "We have started crocheting your pieces! 🧶";
+      else if (status === "DISPATCHED")
+        message += "Your parcel has been handed over for delivery! 📦";
+      else if (status === "COMPLETED")
+        message +=
+          "Your handmade order has been delivered! We hope you love it! 🌷";
+      else if (status === "CANCELLED")
+        message +=
+          "We’re sorry, but your order for these items has been cancelled.";
+      else if (status === "REJECTED")
+        message += "We’re sorry, but your order for these items has been rejected.";
+      else message += "Your order has been received and confirmed!";
+    }
 
     if (
       ["CANCELLED", "REJECTED"].includes(status) &&
@@ -435,6 +457,22 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     }
 
     return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
+  };
+
+  const copyGiftMessage = async (orderId, message) => {
+    try {
+      if (!navigator.clipboard?.writeText) {
+        throw new Error("Clipboard access is unavailable in this browser.");
+      }
+      await navigator.clipboard.writeText(message);
+      setGiftNoteCopyState({ orderId, copied: true, error: "" });
+    } catch (copyError) {
+      setGiftNoteCopyState({
+        orderId,
+        copied: false,
+        error: copyError.message || "Could not copy the card message.",
+      });
+    }
   };
 
   const getStatusBadgeStyle = (status) => {
@@ -728,10 +766,20 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     backgroundColor: "#FFFFFF",
                     borderRadius: "20px",
                     padding: "1.5rem",
-                    border: "1px solid #EFE5DF",
-                    boxShadow: "0 4px 14px rgba(0,0,0,0.04)",
+                    border: order.isGiftOrder
+                      ? "2px solid #E7B6C3"
+                      : "1px solid #EFE5DF",
+                    boxShadow: order.isGiftOrder
+                      ? "0 8px 24px rgba(231, 145, 168, 0.16)"
+                      : "0 4px 14px rgba(0,0,0,0.04)",
                   }}
                 >
+                  {order.isGiftOrder && (
+                    <div className="admin-order-gift-banner">
+                      <span>🎁 Special gift order · ribbon &amp; card</span>
+                      <span>🚫 No invoice or pricing slips</span>
+                    </div>
+                  )}
                   <div
                     style={{
                       display: "flex",
@@ -868,7 +916,9 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                           color: "#8B3E54",
                         }}
                       >
-                        Customer & Shipping
+                        {order.isGiftOrder
+                          ? "Gift recipient & shipping"
+                          : "Customer & Shipping"}
                       </h4>
                       <p
                         style={{
@@ -886,22 +936,48 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                               🎀
                             </span>
                             <div>
-                              <strong>A little gift is on its way!</strong>
+                              <strong>Buyer &amp; recipient</strong>
                               <span>
-                                From {order.giftSenderName || "your customer"} to{" "}
-                                {order.giftRecipientName || order.customerName}
+                                Sender: {order.giftSenderName || "Customer"}
+                              </span>
+                              <span>
+                                Recipient: {order.giftRecipientName || order.customerName}
                               </span>
                             </div>
                           </div>
                           {order.giftMessage && (
-                            <blockquote className="admin-order-gift__note">
-                              <span>Handwritten card</span>
-                              “{order.giftMessage}”
-                            </blockquote>
+                            <div className="admin-order-gift__postcard">
+                              <div className="admin-order-gift__postcard-heading">
+                                <span>💌 Handwritten card note</span>
+                                <button
+                                  aria-live="polite"
+                                  className="admin-order-gift__copy"
+                                  type="button"
+                                  onClick={() =>
+                                    copyGiftMessage(order.id, order.giftMessage)
+                                  }
+                                >
+                                  {giftNoteCopyState?.orderId === order.id &&
+                                  giftNoteCopyState.copied
+                                    ? "✓ Copied!"
+                                    : "Copy note"}
+                                </button>
+                              </div>
+                              <blockquote className="admin-order-gift__note">
+                                “{order.giftMessage}”
+                              </blockquote>
+                              {giftNoteCopyState?.orderId === order.id &&
+                                giftNoteCopyState.error && (
+                                  <span className="admin-order-gift__copy-error" role="alert">
+                                    {giftNoteCopyState.error}
+                                  </span>
+                                )}
+                            </div>
                           )}
-                          <span className="admin-order-gift__promise">
-                            ✨ No invoice or price slips in the parcel
-                          </span>
+                          <div className="admin-order-gift__alerts">
+                            <span>🚫 Do not include invoice / pricing</span>
+                            <span>🎀 Wrap with ribbon</span>
+                          </div>
                         </div>
                       )}
                       <p

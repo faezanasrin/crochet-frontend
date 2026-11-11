@@ -1713,6 +1713,30 @@
   font-weight: 750;
 }
 
+.admin-order-gift-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+  margin: -1.5rem -1.5rem 1.25rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 18px 18px 0 0;
+  background: linear-gradient(100deg, #8b3e54, #b85b74 58%, #c4798d);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 750;
+  letter-spacing: 0.02em;
+}
+
+.admin-order-gift-banner span:last-child {
+  padding: 0.25rem 0.6rem;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  font-size: 0.7rem;
+}
+
 .admin-order-gift {
   display: grid;
   gap: 0.7rem;
@@ -1759,6 +1783,56 @@
   color: #806873;
 }
 
+.admin-order-gift__postcard {
+  display: grid;
+  gap: 0.55rem;
+  padding: 0.75rem;
+  border: 1px dashed #d6b29c;
+  border-radius: 12px;
+  background:
+    linear-gradient(rgba(255, 253, 248, 0.94), rgba(255, 248, 238, 0.96)),
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 23px,
+      rgba(214, 178, 156, 0.16) 24px
+    );
+  box-shadow: 0 3px 10px rgba(139, 62, 84, 0.05);
+}
+
+.admin-order-gift__postcard-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  color: #8e5136;
+  font-size: 0.74rem;
+  font-weight: 800;
+}
+
+.admin-order-gift__copy {
+  padding: 0.35rem 0.65rem;
+  border: 0;
+  border-radius: 7px;
+  background: #8e5136;
+  color: #fff;
+  font: inherit;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background-color 150ms ease;
+}
+
+.admin-order-gift__copy:hover {
+  background: #70402d;
+}
+
+.admin-order-gift__copy:focus-visible {
+  outline: 2px solid #8e5136;
+  outline-offset: 2px;
+}
+
 .admin-order-gift__note {
   display: grid;
   gap: 0.25rem;
@@ -1775,20 +1849,25 @@
   white-space: pre-wrap;
 }
 
-.admin-order-gift__note span {
-  color: #a26d7f;
-  font-family: inherit;
-  font-size: 0.68rem;
-  font-style: normal;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.admin-order-gift__copy-error {
+  color: #a83232;
+  font-size: 0.72rem;
 }
 
-.admin-order-gift__promise {
+.admin-order-gift__alerts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+}
+
+.admin-order-gift__alerts span {
+  padding: 0.3rem 0.55rem;
+  border: 1px solid #ecc4d2;
+  border-radius: 999px;
+  background: #fff;
   color: #8b5368;
   font-size: 0.74rem;
-  font-weight: 650;
+  font-weight: 700;
 }
 
 .admin-order-card__delete {
@@ -2359,23 +2438,6 @@
   margin: 0.4rem 0 0;
   color: #806f61;
   line-height: 1.5;
-}
-
-.admin-order-gift {
-  display: grid;
-  gap: 3px;
-  margin: 8px 0;
-  padding: 8px 10px;
-  border: 1px dashed #d8b7a5;
-  border-radius: 8px;
-  background: #fffaf5;
-  color: #6a5c59;
-  font-size: 0.8rem;
-  overflow-wrap: anywhere;
-}
-
-.admin-order-gift strong {
-  color: #8b3e54;
 }
 
 .order-receipt__thanks {
