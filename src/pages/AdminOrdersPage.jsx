@@ -785,6 +785,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     </div>
                   )}
                   <div
+                    className="admin-order-card__header"
                     style={{
                       display: "flex",
                       justifyContent: "space-between",
@@ -796,8 +797,9 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       gap: "10px",
                     }}
                   >
-                    <div>
+                    <div className="admin-order-card__heading">
                       <div
+                        className="admin-order-card__badges"
                         style={{
                           display: "flex",
                           alignItems: "center",

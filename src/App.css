@@ -1700,6 +1700,25 @@
   position: relative;
 }
 
+.admin-order-card__header {
+  min-width: 0;
+}
+
+.admin-order-card__heading {
+  min-width: 0;
+  flex: 1 1 260px;
+}
+
+.admin-order-card__badges {
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.admin-order-card__badges > * {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
 .admin-order-gift-badge {
   display: inline-flex;
   align-items: center;
@@ -1711,6 +1730,8 @@
   color: #8b3e62;
   font-size: 0.76rem;
   font-weight: 750;
+  line-height: 1.35;
+  white-space: normal;
 }
 
 .admin-order-gift-banner {
@@ -1950,6 +1971,15 @@
 }
 
 @media (max-width: 600px) {
+  .admin-order-card__heading {
+    flex-basis: 100%;
+  }
+
+  .admin-order-card__badges {
+    align-items: flex-start;
+    gap: 0.45rem;
+  }
+
   .admin-order-card__total {
     width: 100%;
     justify-content: space-between;
