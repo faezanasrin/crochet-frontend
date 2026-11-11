@@ -26,8 +26,9 @@ function isUpiOrder(order) {
   return order.paymentMethod === "UPI" || order.paymentMethod === "UPI / GPay";
 }
 
+// Explicitly validates boolean true or string "true", ignoring null, undefined, false, or "false"
 function isGiftOrder(order) {
-  return order.isGiftOrder === true || order.isGiftOrder === "true";
+  return order?.isGiftOrder === true || order?.isGiftOrder === "true";
 }
 
 export default function AdminOrdersPage({ onProductsChanged }) {
@@ -122,14 +123,11 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     setAuthError("");
 
     try {
-      const response = await fetch(
-        `${API_BASE_URL}/api/auth/admin/login`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ password: passwordInput }),
-        },
-      );
+      const response = await fetch(`${API_BASE_URL}/api/auth/admin/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password: passwordInput }),
+      });
       const data = await response.json();
       if (!response.ok) {
         throw new Error(data.error || "Admin sign-in failed.");
@@ -161,21 +159,17 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     setPasswordInput("");
   };
 
-  // Status Update Handler
   const handleStatusChange = async (orderId, newStatus) => {
     setStatusActionError("");
     try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/orders/${orderId}/status`,
-        {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${adminToken}`,
-          },
-          body: JSON.stringify({ status: newStatus }),
+      const res = await fetch(`${API_BASE_URL}/api/orders/${orderId}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${adminToken}`,
         },
-      );
+        body: JSON.stringify({ status: newStatus }),
+      });
       const body = await res.json().catch(() => ({}));
 
       if (!res.ok) {
@@ -408,34 +402,34 @@ export default function AdminOrdersPage({ onProductsChanged }) {
       ? cleanPhone
       : `91${cleanPhone}`;
     const orderedItems = parseOrderItemsSummary(order.orderedItemsSummary);
-    const productNames = orderedItems
-      ?.map((item) => item.name)
-      .filter(Boolean);
-    const products = productNames?.length
+    const productNames = orderedItems?.map((item) => item.name).filter(Boolean);
+    const productsList = productNames?.length
       ? productNames.join(", ")
       : "your handmade items";
 
     const senderName = order.giftSenderName || customerName;
     const recipientName = order.giftRecipientName || order.customerName;
+    const isGift = isGiftOrder(order);
     let message;
 
-    if (isGiftOrder(order)) {
-      message = `Hello ${senderName}! 🌸 We’re crafting your gift order for ${recipientName}: ${products}. `;
+    if (isGift) {
+      message = `Hello ${senderName}! 🌸 We’re crafting your gift order for ${recipientName}: ${productsList}. `;
       if (status === "CROCHETING")
         message += "We’ve started crocheting your thoughtful surprise! 🧶";
       else if (status === "DISPATCHED")
         message +=
           "Your gift parcel, with its handwritten card, is on its way! 📦🎀";
       else if (status === "COMPLETED")
-        message +=
-          `Your gift parcel has been delivered to ${recipientName}! We hope they love it! 🌷`;
+        message += `Your gift parcel has been delivered to ${recipientName}! We hope they love it! 🌷`;
       else if (status === "CANCELLED")
         message += "We’re sorry, but the gift order has been cancelled.";
       else if (status === "REJECTED")
         message += "We’re sorry, but we’re unable to fulfill this gift order.";
-      else message += "We’ve received your order and are preparing your gift wrap!";
+      else
+        message +=
+          "We’ve received your order and are preparing your gift wrap!";
     } else {
-      message = `Hello ${customerName}! 🌸 Update about ${products}: `;
+      message = `Hello ${customerName}! 🌸 Update about ${productsList}: `;
       if (status === "CROCHETING")
         message += "We have started crocheting your pieces! 🧶";
       else if (status === "DISPATCHED")
@@ -447,7 +441,8 @@ export default function AdminOrdersPage({ onProductsChanged }) {
         message +=
           "We’re sorry, but your order for these items has been cancelled.";
       else if (status === "REJECTED")
-        message += "We’re sorry, but your order for these items has been rejected.";
+        message +=
+          "We’re sorry, but your order for these items has been rejected.";
       else message += "Your order has been received and confirmed!";
     }
 
@@ -644,7 +639,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                 color: "#6A3845",
               }}
             >
-                🔄 Refresh
+              🔄 Refresh
             </button>
           ) : (
             <button
@@ -755,14 +750,15 @@ export default function AdminOrdersPage({ onProductsChanged }) {
             style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
           >
             {orders.map((order) => {
-              const badge = getStatusBadgeStyle(order.status);
               const isGift = isGiftOrder(order);
+              const badge = getStatusBadgeStyle(order.status);
               const isTerminalOrder = ["REJECTED", "CANCELLED"].includes(
                 order.status,
               );
               const orderedItems = parseOrderItemsSummary(
                 order.orderedItemsSummary,
               );
+
               return (
                 <div
                   key={order.id}
@@ -771,9 +767,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                     backgroundColor: "#FFFFFF",
                     borderRadius: "20px",
                     padding: "1.5rem",
-                    border: isGift
-                      ? "2px solid #E7B6C3"
-                      : "1px solid #EFE5DF",
+                    border: isGift ? "2px solid #E7B6C3" : "1px solid #EFE5DF",
                     boxShadow: isGift
                       ? "0 8px 24px rgba(231, 145, 168, 0.16)"
                       : "0 4px 14px rgba(0,0,0,0.04)",
@@ -937,7 +931,10 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       {isGift && (
                         <div className="admin-order-gift">
                           <div className="admin-order-gift__heading">
-                            <span className="admin-order-gift__icon" aria-hidden="true">
+                            <span
+                              className="admin-order-gift__icon"
+                              aria-hidden="true"
+                            >
                               🎀
                             </span>
                             <div>
@@ -946,7 +943,8 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                                 Sender: {order.giftSenderName || "Customer"}
                               </span>
                               <span>
-                                Recipient: {order.giftRecipientName || order.customerName}
+                                Recipient:{" "}
+                                {order.giftRecipientName || order.customerName}
                               </span>
                             </div>
                           </div>
@@ -973,7 +971,10 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                               </blockquote>
                               {giftNoteCopyState?.orderId === order.id &&
                                 giftNoteCopyState.error && (
-                                  <span className="admin-order-gift__copy-error" role="alert">
+                                  <span
+                                    className="admin-order-gift__copy-error"
+                                    role="alert"
+                                  >
                                     {giftNoteCopyState.error}
                                   </span>
                                 )}
@@ -1068,8 +1069,11 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                               const quantity = Number(item.quantity || 0);
                               const price = Number(item.price || 0);
                               return (
-                                <li key={`${item.productId || item.name}-${index}`}>
-                                  {item.name || `Product ${item.productId || ""}`}
+                                <li
+                                  key={`${item.productId || item.name}-${index}`}
+                                >
+                                  {item.name ||
+                                    `Product ${item.productId || ""}`}
                                   {" · Qty: "}
                                   {quantity}
                                   {" · ₹"}
@@ -1088,7 +1092,8 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                               overflowWrap: "anywhere",
                             }}
                           >
-                            {order.orderedItemsSummary || "No item details available."}
+                            {order.orderedItemsSummary ||
+                              "No item details available."}
                           </p>
                         )}
                       </div>
@@ -1108,7 +1113,9 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       }}
                     >
                       <strong>Customer UPI transaction ID:</strong>{" "}
-                      {order.utrNumber || order.paymentReference || "Not provided"}
+                      {order.utrNumber ||
+                        order.paymentReference ||
+                        "Not provided"}
                     </div>
                   )}
 
@@ -1121,37 +1128,41 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                   >
                     {!isTerminalOrder && (
                       <div className="admin-order-status">
-                      <span
-                        className="admin-order-status__label"
-                        style={{
-                          fontSize: "0.85rem",
-                          fontWeight: "600",
-                          color: "#6A5C59",
-                        }}
-                      >
-                        Set Status:
-                      </span>
-                      {[
-                        { key: "PENDING", label: "⏳ Pending" },
-                        { key: "CROCHETING", label: "🧶 Crocheting" },
-                        { key: "DISPATCHED", label: "📦 Dispatched" },
-                        { key: "COMPLETED", label: "🌸 Delivered" },
-                      ].map((step) => (
-                        <button
-                          key={step.key}
-                          className="admin-order-status__button"
-                          type="button"
-                          onClick={() => handleStatusChange(order.id, step.key)}
+                        <span
+                          className="admin-order-status__label"
                           style={{
-                            backgroundColor:
-                              order.status === step.key ? "#8B3E54" : "#F4ECE7",
-                            color:
-                              order.status === step.key ? "#FFF" : "#5A4C48",
+                            fontSize: "0.85rem",
+                            fontWeight: "600",
+                            color: "#6A5C59",
                           }}
                         >
-                          {step.label}
-                        </button>
-                      ))}
+                          Set Status:
+                        </span>
+                        {[
+                          { key: "PENDING", label: "⏳ Pending" },
+                          { key: "CROCHETING", label: "🧶 Crocheting" },
+                          { key: "DISPATCHED", label: "📦 Dispatched" },
+                          { key: "COMPLETED", label: "🌸 Delivered" },
+                        ].map((step) => (
+                          <button
+                            key={step.key}
+                            className="admin-order-status__button"
+                            type="button"
+                            onClick={() =>
+                              handleStatusChange(order.id, step.key)
+                            }
+                            style={{
+                              backgroundColor:
+                                order.status === step.key
+                                  ? "#8B3E54"
+                                  : "#F4ECE7",
+                              color:
+                                order.status === step.key ? "#FFF" : "#5A4C48",
+                            }}
+                          >
+                            {step.label}
+                          </button>
+                        ))}
                       </div>
                     )}
 
