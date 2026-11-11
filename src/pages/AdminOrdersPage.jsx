@@ -28,7 +28,12 @@ function isUpiOrder(order) {
 
 // Explicitly validates boolean true or string "true", ignoring null, undefined, false, or "false"
 function isGiftOrder(order) {
-  return order?.isGiftOrder === true || order?.isGiftOrder === "true";
+  return (
+    order?.isGiftOrder === true ||
+    order?.isGiftOrder === "true" ||
+    Boolean(order?.giftRecipientName) ||
+    Boolean(order?.giftMessage)
+  );
 }
 
 export default function AdminOrdersPage({ onProductsChanged }) {
@@ -397,7 +402,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
   };
 
   const formatWhatsAppLink = (phone, customerName, order, status) => {
-    const cleanPhone = phone.replace(/[^0-9]/g, "");
+    const cleanPhone = (phone || "").replace(/[^0-9]/g, "");
     const formattedPhone = cleanPhone.startsWith("91")
       ? cleanPhone
       : `91${cleanPhone}`;
@@ -418,13 +423,15 @@ export default function AdminOrdersPage({ onProductsChanged }) {
         message += "We’ve started crocheting your thoughtful surprise! 🧶";
       else if (status === "DISPATCHED")
         message +=
-          "Your gift parcel, with its handwritten card, is on its way! 📦🎀";
+          `Your gift parcel for ${recipientName}, with its handwritten card, is on its way! 📦🎀`;
       else if (status === "COMPLETED")
         message += `Your gift parcel has been delivered to ${recipientName}! We hope they love it! 🌷`;
       else if (status === "CANCELLED")
-        message += "We’re sorry, but the gift order has been cancelled.";
+        message +=
+          `We’re sorry, but the gift order for ${recipientName} has been cancelled.`;
       else if (status === "REJECTED")
-        message += "We’re sorry, but we’re unable to fulfill this gift order.";
+        message +=
+          `We’re sorry, but we’re unable to fulfill the gift order for ${recipientName}.`;
       else
         message +=
           "We’ve received your order and are preparing your gift wrap!";
@@ -928,25 +935,29 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       >
                         {order.customerName}
                       </p>
-                      {isGift && (
+                      {isGift ? (
                         <div className="admin-order-gift">
-                          <div className="admin-order-gift__heading">
-                            <span
-                              className="admin-order-gift__icon"
-                              aria-hidden="true"
-                            >
-                              🎀
-                            </span>
-                            <div>
-                              <strong>Buyer &amp; recipient</strong>
+                          <div className="admin-order-gift__contacts">
+                            <section className="admin-order-gift__contact">
+                              <strong>👤 Buyer &amp; WhatsApp contact</strong>
                               <span>
-                                Sender: {order.giftSenderName || "Customer"}
+                                {order.giftSenderName || order.customerName}
                               </span>
+                              <span>Phone: {order.phone || "Not provided"}</span>
+                              {order.customerEmail && (
+                                <span>{order.customerEmail}</span>
+                              )}
+                              <small>Status updates go to the buyer</small>
+                            </section>
+                            <section className="admin-order-gift__contact admin-order-gift__contact--recipient">
+                              <strong>🎁 Deliver to recipient</strong>
                               <span>
-                                Recipient:{" "}
                                 {order.giftRecipientName || order.customerName}
                               </span>
-                            </div>
+                              <span>{order.address}</span>
+                              <span>PIN: {order.pincode}</span>
+                              <small>Use this name and address on the parcel</small>
+                            </section>
                           </div>
                           {order.giftMessage && (
                             <div className="admin-order-gift__postcard">
@@ -985,25 +996,28 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                             <span>🎀 Wrap with ribbon</span>
                           </div>
                         </div>
+                      ) : (
+                        <>
+                          <p
+                            style={{
+                              margin: "2px 0",
+                              fontSize: "0.85rem",
+                              color: "#6A5C59",
+                            }}
+                          >
+                            {order.address}
+                          </p>
+                          <p
+                            style={{
+                              margin: "2px 0",
+                              fontSize: "0.85rem",
+                              color: "#6A5C59",
+                            }}
+                          >
+                            PIN: {order.pincode}
+                          </p>
+                        </>
                       )}
-                      <p
-                        style={{
-                          margin: "2px 0",
-                          fontSize: "0.85rem",
-                          color: "#6A5C59",
-                        }}
-                      >
-                        {order.address}
-                      </p>
-                      <p
-                        style={{
-                          margin: "2px 0",
-                          fontSize: "0.85rem",
-                          color: "#6A5C59",
-                        }}
-                      >
-                        PIN: {order.pincode}
-                      </p>
                     </div>
 
                     <div>

@@ -1752,6 +1752,50 @@
   overflow-wrap: anywhere;
 }
 
+.admin-order-gift__contacts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 0.6rem;
+}
+
+.admin-order-gift__contact {
+  display: grid;
+  align-content: start;
+  gap: 0.35rem;
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid #f0dce3;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.82);
+}
+
+.admin-order-gift__contact strong {
+  margin-bottom: 0.15rem;
+  color: #873e5c;
+  font-size: 0.78rem;
+}
+
+.admin-order-gift__contact span {
+  color: #684952;
+  font-size: 0.78rem;
+}
+
+.admin-order-gift__contact small {
+  margin-top: 0.2rem;
+  color: #8b5368;
+  font-size: 0.68rem;
+  font-weight: 700;
+}
+
+.admin-order-gift__contact--recipient {
+  border-color: #e8d5c9;
+  background: #fffdf9;
+}
+
+.admin-order-gift__contact--recipient strong {
+  color: #8e5136;
+}
+
 .admin-order-gift__heading {
   display: flex;
   align-items: center;
