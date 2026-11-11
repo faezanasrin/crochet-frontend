@@ -12,7 +12,6 @@ export default function ProductDetailPage({
 }) {
   const [quantity, setQuantity] = useState(1);
   const [addedAnimation, setAddedAnimation] = useState(false);
-  const isMysteryBox = product.category?.toLowerCase() === "mystery box";
 
   const handleAdd = () => {
     // Add multiple quantities to cart
@@ -163,36 +162,6 @@ export default function ProductDetailPage({
           >
             ₹{Number(product.price).toFixed(2)}
           </div>
-          {isMysteryBox && (
-            <section className="mystery-box-details">
-              <h2>🎁 What’s in Your Founder Box?</h2>
-              <ul>
-                <li>
-                  <strong>1 Full-Sized Creation:</strong> Tulip stem, flower
-                  pot, or daisy bag charm
-                </li>
-                <li>
-                  <strong>1 Micro Surprise:</strong> Sprout headphone tie or
-                  crochet hair clip
-                </li>
-                <li>
-                  <strong>Numbered Founder Postcard:</strong> Handwritten card
-                  (e.g., <em>“Founder #4 of 10”</em>)
-                </li>
-                <li>
-                  <strong>VIP Perk:</strong> A private 15% discount card for
-                  your next custom order
-                </li>
-                <li>
-                  <strong>Cozy Packaging:</strong> Wrapped in pink tissue
-                  paper, lace ribbon, and wax seal
-                </li>
-              </ul>
-              <p>
-                Each box is a surprise, thoughtfully packed by the founder.
-              </p>
-            </section>
-          )}
           <p
             className={`product-detail__availability ${
               product.inStock
@@ -212,9 +181,9 @@ export default function ProductDetailPage({
               margin: "0 0 1.5rem",
             }}
           >
-            {isMysteryBox
-              ? "A limited founder collection featuring a surprise handmade creation and thoughtful extra treats."
-              : "Delicately crafted loop by loop using premium soft yarns. Ideal as a charming gift, desk companion, or keepsake that won't wilt or fray."}
+            Delicately crafted loop by loop using premium soft yarns. Ideal as
+            a charming gift, desk companion, or keepsake that won't wilt or
+            fray.
           </p>
 
           {/* Key Craft Specifications */}

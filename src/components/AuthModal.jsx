@@ -178,7 +178,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess }) {
                 marginBottom: "4px",
               }}
             >
-              Password *
+              {isRegister ? "New Password" : "Password"} *
             </label>
             <input
               type="password"

@@ -397,13 +397,20 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     }
   };
 
-  const formatWhatsAppLink = (phone, customerName, orderId, status) => {
+  const formatWhatsAppLink = (phone, customerName, order, status) => {
     const cleanPhone = phone.replace(/[^0-9]/g, "");
     const formattedPhone = cleanPhone.startsWith("91")
       ? cleanPhone
       : `91${cleanPhone}`;
+    const orderedItems = parseOrderItemsSummary(order.orderedItemsSummary);
+    const productNames = orderedItems
+      ?.map((item) => item.name)
+      .filter(Boolean);
+    const products = productNames?.length
+      ? productNames.join(", ")
+      : "your handmade items";
 
-    let message = `Hello ${customerName}! 🌸 Updating you on your Fayzo Crochet order (#${orderId}): `;
+    let message = `Hello ${customerName}! 🌸 Update about ${products}: `;
     if (status === "CROCHETING")
       message += "We have started crocheting your pieces! 🧶";
     else if (status === "DISPATCHED")
@@ -411,7 +418,21 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     else if (status === "COMPLETED")
       message +=
         "Your handmade order has been delivered! We hope you love it! 🌷";
+    else if (status === "CANCELLED")
+      message +=
+        "We’re sorry, but your order for these items has been cancelled.";
+    else if (status === "REJECTED")
+      message += "We’re sorry, but your order for these items has been rejected.";
     else message += "Your order has been received and confirmed!";
+
+    if (
+      ["CANCELLED", "REJECTED"].includes(status) &&
+      isUpiOrder(order) &&
+      order.paymentStatus === "PAID"
+    ) {
+      message +=
+        " Your refund will be initiated to your original payment account within 2–5 days.";
+    }
 
     return `https://wa.me/${formattedPhone}?text=${encodeURIComponent(message)}`;
   };
@@ -1067,7 +1088,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       href={formatWhatsAppLink(
                         order.phone,
                         order.customerName,
-                        order.id,
+                        order,
                         order.status,
                       )}
                       target="_blank"
