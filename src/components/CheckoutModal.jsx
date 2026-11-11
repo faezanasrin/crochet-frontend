@@ -184,7 +184,7 @@ export default function CheckoutModal({
   const [paymentUtr, setPaymentUtr] = useState("");
   const subtotal = Number(totalAmount);
   const deliveryCharge = subtotal >= 499 ? 0 : 49;
-  const giftWrapFee = formData.isGiftOrder ? 150 : 0;
+  const giftWrapFee = formData.isGiftOrder ? 50 : 0;
   const grandTotal = subtotal + deliveryCharge + giftWrapFee;
   const amountToFreeDelivery = Math.max(0, 499 - subtotal);
 
@@ -544,7 +544,7 @@ export default function CheckoutModal({
                     setErrorMessage("");
                   }}
                 />
-                <span>🎁 Sending directly to someone special? (₹150)</span>
+                <span>🎁 Sending directly to someone special? (₹50)</span>
               </label>
 
               {formData.isGiftOrder ? (
