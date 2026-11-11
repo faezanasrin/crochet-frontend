@@ -785,6 +785,11 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                         >
                           {order.paymentMethod}
                         </span>
+                        {order.isGiftOrder && (
+                          <span className="admin-order-gift-badge">
+                            🎁 Sending to someone special
+                          </span>
+                        )}
                         {isUpiOrder(order) && (
                           <span
                             style={{
@@ -876,15 +881,27 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                       </p>
                       {order.isGiftOrder && (
                         <div className="admin-order-gift">
-                          <strong>🎁 Gift order</strong>
-                          <span>From: {order.giftSenderName || "Customer"}</span>
-                          <span>
-                            Recipient: {order.giftRecipientName || order.customerName}
-                          </span>
+                          <div className="admin-order-gift__heading">
+                            <span className="admin-order-gift__icon" aria-hidden="true">
+                              🎀
+                            </span>
+                            <div>
+                              <strong>A little gift is on its way!</strong>
+                              <span>
+                                From {order.giftSenderName || "your customer"} to{" "}
+                                {order.giftRecipientName || order.customerName}
+                              </span>
+                            </div>
+                          </div>
                           {order.giftMessage && (
-                            <span>Card note: “{order.giftMessage}”</span>
+                            <blockquote className="admin-order-gift__note">
+                              <span>Handwritten card</span>
+                              “{order.giftMessage}”
+                            </blockquote>
                           )}
-                          <span>No invoice or pricing slips in parcel</span>
+                          <span className="admin-order-gift__promise">
+                            ✨ No invoice or price slips in the parcel
+                          </span>
                         </div>
                       )}
                       <p

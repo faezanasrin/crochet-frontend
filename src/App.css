@@ -1700,6 +1700,97 @@
   position: relative;
 }
 
+.admin-order-gift-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 5px 11px;
+  border: 1px solid #e8bfd0;
+  border-radius: 999px;
+  background: #fff0f5;
+  color: #8b3e62;
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.admin-order-gift {
+  display: grid;
+  gap: 0.7rem;
+  margin: 0.8rem 0;
+  padding: 0.9rem;
+  border: 1px solid #edc9d6;
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 100% 0, rgba(255, 227, 236, 0.8), transparent 42%),
+    linear-gradient(135deg, #fff8f8, #fff3f6);
+  color: #684952;
+  font-size: 0.8rem;
+  overflow-wrap: anywhere;
+}
+
+.admin-order-gift__heading {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.admin-order-gift__icon {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 38px;
+  place-items: center;
+  border-radius: 12px;
+  background: #ffe3ec;
+  font-size: 1.25rem;
+}
+
+.admin-order-gift__heading > div {
+  display: grid;
+  gap: 2px;
+}
+
+.admin-order-gift__heading strong {
+  color: #873e5c;
+  font-size: 0.88rem;
+}
+
+.admin-order-gift__heading span {
+  color: #806873;
+}
+
+.admin-order-gift__note {
+  display: grid;
+  gap: 0.25rem;
+  margin: 0;
+  padding: 0.65rem 0.75rem;
+  border-left: 3px solid #d990aa;
+  border-radius: 0 9px 9px 0;
+  background: rgba(255, 255, 255, 0.75);
+  color: #684952;
+  font-family: Georgia, serif;
+  font-size: 0.88rem;
+  font-style: italic;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.admin-order-gift__note span {
+  color: #a26d7f;
+  font-family: inherit;
+  font-size: 0.68rem;
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.admin-order-gift__promise {
+  color: #8b5368;
+  font-size: 0.74rem;
+  font-weight: 650;
+}
+
 .admin-order-card__delete {
   display: grid;
   width: 32px;
