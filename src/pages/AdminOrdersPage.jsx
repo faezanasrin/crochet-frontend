@@ -401,8 +401,8 @@ export default function AdminOrdersPage({ onProductsChanged }) {
     }
   };
 
-  const formatWhatsAppLink = (phone, customerName, order, status) => {
-    const cleanPhone = (phone || "").replace(/[^0-9]/g, "");
+  const formatWhatsAppLink = (order, status) => {
+    const cleanPhone = (order.phone || "").replace(/[^0-9]/g, "");
     const formattedPhone = cleanPhone.startsWith("91")
       ? cleanPhone
       : `91${cleanPhone}`;
@@ -412,30 +412,28 @@ export default function AdminOrdersPage({ onProductsChanged }) {
       ? productNames.join(", ")
       : "your handmade items";
 
-    const senderName = order.giftSenderName || customerName;
-    const recipientName = order.giftRecipientName || order.customerName;
+    const senderName = order.giftSenderName || order.customerName || "there";
+    const recipientName =
+      order.giftRecipientName || order.customerName || "someone special";
     const isGift = isGiftOrder(order);
     let message;
 
     if (isGift) {
-      message = `Hello ${senderName}! 🌸 We’re crafting your gift order for ${recipientName}: ${productsList}. `;
-      if (status === "CROCHETING")
-        message += "We’ve started crocheting your thoughtful surprise! 🧶";
-      else if (status === "DISPATCHED")
-        message +=
-          `Your gift parcel for ${recipientName}, with its handwritten card, is on its way! 📦🎀`;
-      else if (status === "COMPLETED")
-        message += `Your gift parcel has been delivered to ${recipientName}! We hope they love it! 🌷`;
-      else if (status === "CANCELLED")
-        message +=
-          `We’re sorry, but the gift order for ${recipientName} has been cancelled.`;
-      else if (status === "REJECTED")
-        message +=
-          `We’re sorry, but we’re unable to fulfill the gift order for ${recipientName}.`;
-      else
-        message +=
-          "We’ve received your order and are preparing your gift wrap!";
+      if (status === "CROCHETING") {
+        message = `Hello ${senderName}! 🧶 Update on your gift order for ${recipientName}: We've started crocheting their pieces with love!`;
+      } else if (status === "DISPATCHED") {
+        message = `Hello ${senderName}! 📦 Great news! Your gift parcel for ${recipientName} has been wrapped with ribbon, handwritten card included, and is on its way! 🎀`;
+      } else if (status === "COMPLETED") {
+        message = `Hello ${senderName}! 🌸 The gift surprise for ${recipientName} has been safely delivered to their doorstep! 🌷`;
+      } else if (status === "CANCELLED") {
+        message = `Hello ${senderName}! We're sorry, but the gift order for ${recipientName} has been cancelled.`;
+      } else if (status === "REJECTED") {
+        message = `Hello ${senderName}! We're sorry, but we're unable to fulfill the gift order for ${recipientName}.`;
+      } else {
+        message = `Hello ${senderName}! 🌸 Thank you for your gift order for ${recipientName}! We have received it and are preparing the special gift wrapping and card ♡`;
+      }
     } else {
+      const customerName = order.customerName || "there";
       message = `Hello ${customerName}! 🌸 Update about ${productsList}: `;
       if (status === "CROCHETING")
         message += "We have started crocheting your pieces! 🧶";
@@ -782,8 +780,8 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                 >
                   {isGift && (
                     <div className="admin-order-gift-banner">
-                      <span>🎁 Special gift order · ribbon &amp; card</span>
-                      <span>🚫 No invoice or pricing slips</span>
+                      <span>🎁 SPECIAL GIFT ORDER · RIBBON &amp; CARD</span>
+                      <span>🚫 DO NOT INCLUDE INVOICE IN BOX</span>
                     </div>
                   )}
                   <div
@@ -933,13 +931,15 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                           color: "#3B2F2F",
                         }}
                       >
-                        {order.customerName}
+                        {!isGift && order.customerName}
                       </p>
                       {isGift ? (
                         <div className="admin-order-gift">
                           <div className="admin-order-gift__contacts">
                             <section className="admin-order-gift__contact">
-                              <strong>👤 Buyer &amp; WhatsApp contact</strong>
+                              <strong>
+                                👤 Ordered &amp; Paid By (Logged-in User)
+                              </strong>
                               <span>
                                 {order.giftSenderName || order.customerName}
                               </span>
@@ -950,7 +950,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
                               <small>Status updates go to the buyer</small>
                             </section>
                             <section className="admin-order-gift__contact admin-order-gift__contact--recipient">
-                              <strong>🎁 Deliver to recipient</strong>
+                              <strong>🎁 Deliver To (Gift Recipient)</strong>
                               <span>
                                 {order.giftRecipientName || order.customerName}
                               </span>
@@ -1221,12 +1221,7 @@ export default function AdminOrdersPage({ onProductsChanged }) {
 
                     <a
                       className="admin-order-actions__whatsapp"
-                      href={formatWhatsAppLink(
-                        order.phone,
-                        order.giftSenderName || order.customerName,
-                        order,
-                        order.status,
-                      )}
+                      href={formatWhatsAppLink(order, order.status)}
                       target="_blank"
                       rel="noopener noreferrer"
                       style={{

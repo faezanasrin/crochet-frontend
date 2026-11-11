@@ -225,6 +225,20 @@ export default function CheckoutModal({
 
     const orderPayload = {
       ...formData,
+      isGiftOrder: Boolean(formData.isGiftOrder),
+      giftSenderName: formData.isGiftOrder
+        ? currentUser?.name || formData.customerName
+        : "",
+      giftRecipientName: formData.isGiftOrder
+        ? formData.giftRecipientName
+        : "",
+      giftRecipientAddress: formData.isGiftOrder
+        ? formData.giftRecipientAddress
+        : "",
+      giftRecipientPincode: formData.isGiftOrder
+        ? formData.giftRecipientPincode
+        : "",
+      giftMessage: formData.isGiftOrder ? formData.giftMessage : "",
       customerName: formData.isGiftOrder
         ? formData.giftRecipientName
         : formData.customerName,
@@ -234,8 +248,8 @@ export default function CheckoutModal({
       pincode: formData.isGiftOrder
         ? formData.giftRecipientPincode
         : formData.pincode,
-      giftSenderName: formData.isGiftOrder ? formData.customerName : "",
-      giftWrapFee,
+      phone: formData.phone,
+      giftWrapFee: formData.isGiftOrder ? 50 : 0,
       paymentMethod: "UPI",
       customerEmail: currentUser?.email,
       paymentReference: paymentUtr.trim(),
